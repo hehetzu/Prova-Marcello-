@@ -2,111 +2,189 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Laboratorio Odontotecnico Rosso Marcello</title>
 
+  <!-- Font professionale -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
   <style>
+    /* ------------------------------
+       COLORI E STILE
+    ------------------------------- */
     :root{
-      --primary: #1e88e5;
-      --dark: #0d47a1;
-      --bg: #f6f7fb;
-      --card: #fff;
-      --muted: #555;
-      --radius: 12px;
-      --shadow: 0 8px 24px rgba(0,0,0,0.08);
-      --maxw: 1100px;
+      --primary: #0a6ebd;
+      --primary-light: #e8f2fb;
+      --dark: #063969;
+      --bg: #f8fafc;
+      --text: #1a1a1a;
+      --muted: #545454;
+      --radius: 14px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.06);
+      --maxw: 1200px;
     }
 
-    *{box-sizing:border-box}
+    *{box-sizing:border-box; margin:0; padding:0;}
     body{
-      margin:0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family:'Inter', sans-serif;
       background:var(--bg);
-      color:#111;
+      color:var(--text);
+      line-height:1.6;
     }
 
-    .container{max-width:var(--maxw); margin:auto; padding:0 1rem;}
+    a{text-decoration:none; color:inherit;}
 
+    /* ------------------------------
+       HEADER
+    ------------------------------- */
     header{
-      background:var(--primary);
-      color:#fff;
-      padding:1.5rem 0;
+      background:#fff;
+      box-shadow:0 2px 10px rgba(0,0,0,0.05);
+      position:sticky;
+      top:0;
+      z-index:20;
     }
-    header h1{margin:0; font-size:1.6rem;}
-    header p{margin:0.3rem 0 0; opacity:0.9;}
+    header .container{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:1rem 1.5rem;
+    }
+    header h1{
+      font-size:1.4rem;
+      color:var(--primary);
+      font-weight:600;
+    }
 
     nav{
-      margin-top:1rem;
-      display:flex;
-      flex-wrap:wrap;
-      gap:1rem;
-      font-weight:bold;
-    }
-    nav a{
-      color:#fff;
-      text-decoration:none;
-    }
-
-    .hero{
       display:flex;
       gap:1.5rem;
-      margin:2rem 0;
-      flex-wrap:wrap;
+      font-weight:500;
     }
-    .hero-text{flex:1; min-width:260px;}
-    .hero-text h2{margin:0;}
-    .hero-text p{color:var(--muted);}
-    .hero-card{
-      background:#fff;
-      padding:1rem;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      min-width:240px;
+    nav a{
+      color:var(--dark);
+      transition:0.2s;
+    }
+    nav a:hover{color:var(--primary);}
+
+    /* ------------------------------
+       SECTION WRAPPER
+    ------------------------------- */
+    .container{
+      max-width:var(--maxw);
+      margin:auto;
+      padding:2rem 1rem;
+    }
+
+    /* ------------------------------
+       HERO
+    ------------------------------- */
+    .hero{
+      display:flex;
+      align-items:center;
+      gap:2rem;
+      flex-wrap:wrap;
+      padding:3rem 1rem;
+    }
+    .hero-text{
+      flex:1;
+      min-width:260px;
+    }
+    .hero-text h2{
+      font-size:2.2rem;
+      color:var(--dark);
+      margin-bottom:0.7rem;
+    }
+    .hero-text p{
+      max-width:500px;
+      color:var(--muted);
     }
     .btn{
       display:inline-block;
-      background:var(--dark);
+      padding:0.7rem 1.4rem;
+      background:var(--primary);
       color:#fff;
-      padding:0.6rem 1rem;
-      text-decoration:none;
-      border-radius:8px;
-      margin-top:0.6rem;
+      border-radius:10px;
+      margin-top:1rem;
+      font-weight:600;
+      transition:0.25s;
     }
+    .btn:hover{background:var(--dark);}
 
-    section{margin:2rem 0;}
-    .cards{
-      display:grid;
-      gap:1rem;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    .hero-img{
+      flex:1;
+      min-width:260px;
     }
-    .card{
-      background:#fff;
-      padding:1rem;
+    .hero-img img{
+      width:100%;
       border-radius:var(--radius);
       box-shadow:var(--shadow);
     }
 
+    /* ------------------------------
+       TITOLI SEZIONI
+    ------------------------------- */
+    section h2{
+      font-size:1.9rem;
+      color:var(--dark);
+      margin-bottom:1.2rem;
+    }
+
+    /* ------------------------------
+       CARDS SERVIZI
+    ------------------------------- */
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:1.5rem;
+      margin-top:1rem;
+    }
+    .card{
+      background:#fff;
+      padding:1.5rem;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      transition:0.25s;
+    }
+    .card:hover{transform:translateY(-5px);}
+    .card h3{
+      margin-bottom:0.5rem;
+      color:var(--primary);
+      font-size:1.1rem;
+    }
+    .card p{color:var(--muted);}
+
+    /* ------------------------------
+       GALLERY
+    ------------------------------- */
     .gallery{
       display:grid;
       gap:1rem;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
     }
     .gallery img{
       width:100%;
-      border-radius:8px;
-      cursor:pointer;
+      border-radius:var(--radius);
       box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:0.25s;
     }
+    .gallery img:hover{transform:scale(1.02);}
 
+    /* ------------------------------
+       FOOTER
+    ------------------------------- */
     footer{
       background:var(--dark);
       color:#fff;
       text-align:center;
-      padding:1rem;
-      margin-top:2rem;
+      padding:1.5rem;
+      margin-top:3rem;
     }
 
-    /* MODAL */
+    /* ------------------------------
+       MODAL IMAGE
+    ------------------------------- */
     .modal{
       position:fixed;
       inset:0;
@@ -115,27 +193,34 @@
       justify-content:center;
       align-items:center;
       padding:1rem;
-      z-index:10;
+      z-index:30;
     }
     .modal-inner{
       background:#fff;
       padding:1rem;
-      border-radius:10px;
+      border-radius:var(--radius);
       max-width:90%;
       max-height:90%;
       overflow:auto;
       text-align:center;
       position:relative;
     }
-    .modal img{max-width:100%; border-radius:8px;}
+    .modal img{
+      max-width:100%;
+      border-radius:10px;
+    }
     .modal-close{
       position:absolute;
-      top:8px;
-      right:8px;
+      top:10px;
+      right:10px;
+      font-size:1.4rem;
       background:#fff;
+      border-radius:50%;
       border:0;
-      font-size:1.2rem;
       cursor:pointer;
+      width:35px;
+      height:35px;
+      box-shadow:var(--shadow);
     }
   </style>
 </head>
@@ -145,8 +230,6 @@
 <header>
   <div class="container">
     <h1>Laboratorio Odontotecnico Rosso Marcello</h1>
-    <p>Protesi dentarie di precisione • CAD/CAM • Qualità</p>
-
     <nav>
       <a href="#servizi">Servizi</a>
       <a href="#chi-siamo">Chi Siamo</a>
@@ -156,70 +239,85 @@
   </div>
 </header>
 
-<main class="container">
+<main>
 
-  <section class="hero" id="intro">
+  <!-- HERO -->
+  <section class="container hero">
     <div class="hero-text">
-      <h2>Soluzioni odontotecniche su misura</h2>
-      <p>Corone, ponti, protesi mobili e lavorazioni digitali CAD/CAM.</p>
-      <a href="#contatti" class="btn">Richiedi un preventivo</a>
+      <h2>Protesi dentarie di precisione</h2>
+      <p>
+        Specializzato in <strong>protesi flessibili in Deflex</strong>, protesi mobili e protesi fisse estetiche.  
+        Lavorazioni accurate, materiali certificati e un approccio professionale pensato per studi dentistici.
+      </p>
+      <a href="#contatti" class="btn">Richiedi informazioni</a>
     </div>
 
-    <div class="hero-card">
-      <h3>Contatti rapidi</h3>
-      <p><strong>Email:</strong> info@rossomarcello.it</p>
-      <p><strong>Tel:</strong> +39 000 123 4567</p>
+    <div class="hero-img">
+      <img src="https://via.placeholder.com/600x420?text=Laboratorio+Odontotecnico" alt="Laboratorio">
     </div>
   </section>
 
-  <section id="servizi">
-    <h2>Servizi</h2>
+  <!-- SERVIZI -->
+  <section id="servizi" class="container">
+    <h2>Servizi professionali</h2>
+
     <div class="cards">
       <div class="card">
         <h3>Protesi Fisse</h3>
-        <p>Corone e ponti estetici con materiali certificati.</p>
+        <p>Corone e ponti estetici realizzati con precisione e materiali di alta qualità.</p>
       </div>
+
       <div class="card">
         <h3>Protesi Mobili</h3>
-        <p>Protesi confortevoli e personalizzate.</p>
+        <p>Soluzioni confortevoli e personalizzate per ogni paziente.</p>
       </div>
+
       <div class="card">
-        <h3>CAD/CAM</h3>
-        <p>Progettazione e fresatura digitale.</p>
+        <h3>Protesi Flessibili in Deflex</h3>
+        <p>
+          Specializzazione nella realizzazione di protesi flessibili: resistenti, elastiche e altamente confortevoli.
+        </p>
       </div>
+
       <div class="card">
-        <h3>Riparazioni</h3>
-        <p>Interventi rapidi per riparazioni urgenti.</p>
+        <h3>Riparazioni Veloci</h3>
+        <p>Servizio rapido per riparazioni urgenti di dispositivi protesici.</p>
       </div>
     </div>
   </section>
 
-  <section id="chi-siamo">
+  <!-- CHI SIAMO -->
+  <section id="chi-siamo" class="container">
     <h2>Chi siamo</h2>
-    <p>Il laboratorio guidato da Rosso Marcello unisce esperienza artigianale e tecnologie digitali per prodotti altamente precisi.</p>
+    <p style="max-width:750px;">
+      Il Laboratorio Odontotecnico Rosso Marcello nasce dalla passione per la precisione e la cura del dettaglio.
+      Offriamo supporto professionale agli studi dentistici, integrando tecniche moderne e un’elevata specializzazione
+      nelle <strong>protesi flessibili in Deflex</strong>, garantendo qualità, funzionalità ed estetica.
+    </p>
   </section>
 
-  <section id="gallery">
-    <h2>Galleria</h2>
+  <!-- GALLERY -->
+  <section id="gallery" class="container">
+    <h2>Galleria lavori</h2>
     <div class="gallery">
-      <img src="https://via.placeholder.com/400x300?text=Foto+1" data-caption="Protesi Zirconia" alt="">
-      <img src="https://via.placeholder.com/400x300?text=Foto+2" data-caption="CAD/CAM" alt="">
-      <img src="https://via.placeholder.com/400x300?text=Foto+3" data-caption="Laboratorio" alt="">
-      <img src="https://via.placeholder.com/400x300?text=Foto+4" data-caption="Controllo qualità" alt="">
+      <img src="https://via.placeholder.com/400x300?text=Deflex+1" data-caption="Protesi flessibile Deflex">
+      <img src="https://via.placeholder.com/400x300?text=Protesi+2" data-caption="Lavorazione protesi">
+      <img src="https://via.placeholder.com/400x300?text=Laboratorio" data-caption="Il laboratorio">
+      <img src="https://via.placeholder.com/400x300?text=Qualità" data-caption="Controllo qualità">
     </div>
   </section>
 
-  <section id="contatti">
+  <!-- CONTATTI -->
+  <section id="contatti" class="container">
     <h2>Contatti</h2>
-    <p><strong>Indirizzo:</strong> Via Esempio 123, Città</p>
     <p><strong>Email:</strong> info@rossomarcello.it</p>
     <p><strong>Telefono:</strong> +39 000 123 4567</p>
+    <p><strong>Indirizzo:</strong> Via Esempio 123, Città</p>
   </section>
-
 </main>
 
 <footer>
-  <p>© <span id="year"></span> Laboratorio Odontotecnico Rosso Marcello</p>
+  © <span id="year"></span> Laboratorio Odontotecnico Rosso Marcello
 </footer>
 
 
@@ -227,7 +325,7 @@
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  // Modal immagine
+  // Modal gallery
   const modal = document.createElement("div");
   modal.className = "modal";
   modal.innerHTML = `
@@ -241,7 +339,6 @@
 
   const modalImg = modal.querySelector("#modal-img");
   const modalCaption = modal.querySelector("#modal-caption");
-  const modalClose = modal.querySelector(".modal-close");
 
   document.querySelectorAll(".gallery img").forEach(img => {
     img.addEventListener("click", () => {
@@ -251,8 +348,11 @@
     });
   });
 
-  modalClose.addEventListener("click", () => modal.style.display = "none");
-  modal.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+  modal.addEventListener("click", e => {
+    if (e.target.classList.contains("modal") || e.target.classList.contains("modal-close")) {
+      modal.style.display = "none";
+    }
+  });
 </script>
 
 </body>
