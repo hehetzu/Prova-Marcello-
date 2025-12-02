@@ -3,237 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Laboratorio odontotecnico a Torino specializzato in protesi flessibili Deflex, protesi mobili e fisse. Qualità, precisione e materiali certificati per studi dentistici.">
   <title>Laboratorio Odontotecnico Rosso Marcello</title>
 
   <!-- Font professionale -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-  <style>
-    /* ------------------------------
-       COLORI E STILE
-    ------------------------------- */
-    :root{
-      --primary: #0a6ebd;
-      --primary-light: #e8f2fb;
-      --dark: #063969;
-      --bg: #f8fafc;
-      --text: #1a1a1a;
-      --muted: #545454;
-      --radius: 14px;
-      --shadow: 0 8px 30px rgba(0,0,0,0.06);
-      --maxw: 1200px;
-    }
-
-    *{box-sizing:border-box; margin:0; padding:0;}
-    body{
-      font-family:'Inter', sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      line-height:1.6;
-    }
-
-    a{text-decoration:none; color:inherit;}
-
-    /* ------------------------------
-       HEADER
-    ------------------------------- */
-    header{
-      background:#fff;
-      box-shadow:0 2px 10px rgba(0,0,0,0.05);
-      position:sticky;
-      top:0;
-      z-index:20;
-    }
-    header .container{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:1rem 1.5rem;
-    }
-    header h1{
-      font-size:1.4rem;
-      color:var(--primary);
-      font-weight:600;
-    }
-
-    nav{
-      display:flex;
-      gap:1.5rem;
-      font-weight:500;
-    }
-    nav a{
-      color:var(--dark);
-      transition:0.2s;
-    }
-    nav a:hover{color:var(--primary);}
-
-    /* ------------------------------
-       SECTION WRAPPER
-    ------------------------------- */
-    .container{
-      max-width:var(--maxw);
-      margin:auto;
-      padding:2rem 1rem;
-    }
-
-    /* ------------------------------
-       HERO
-    ------------------------------- */
-    .hero{
-      display:flex;
-      align-items:center;
-      gap:2rem;
-      flex-wrap:wrap;
-      padding:3rem 1rem;
-    }
-    .hero-text{
-      flex:1;
-      min-width:260px;
-    }
-    .hero-text h2{
-      font-size:2.2rem;
-      color:var(--dark);
-      margin-bottom:0.7rem;
-    }
-    .hero-text p{
-      max-width:500px;
-      color:var(--muted);
-    }
-    .btn{
-      display:inline-block;
-      padding:0.7rem 1.4rem;
-      background:var(--primary);
-      color:#fff;
-      border-radius:10px;
-      margin-top:1rem;
-      font-weight:600;
-      transition:0.25s;
-    }
-    .btn:hover{background:var(--dark);}
-
-    .hero-img{
-      flex:1;
-      min-width:260px;
-    }
-    .hero-img img{
-      width:100%;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-    }
-
-    /* ------------------------------
-       TITOLI SEZIONI
-    ------------------------------- */
-    section h2{
-      font-size:1.9rem;
-      color:var(--dark);
-      margin-bottom:1.2rem;
-    }
-
-    /* ------------------------------
-       CARDS SERVIZI
-    ------------------------------- */
-    .cards{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-      gap:1.5rem;
-      margin-top:1rem;
-    }
-    .card{
-      background:#fff;
-      padding:1.5rem;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      transition:0.25s;
-    }
-    .card:hover{transform:translateY(-5px);}
-    .card h3{
-      margin-bottom:0.5rem;
-      color:var(--primary);
-      font-size:1.1rem;
-    }
-    .card p{color:var(--muted);}
-
-    /* ------------------------------
-       GALLERY
-    ------------------------------- */
-    .gallery{
-      display:grid;
-      gap:1rem;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    }
-    .gallery img{
-      width:100%;
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      cursor:pointer;
-      transition:0.25s;
-    }
-    .gallery img:hover{transform:scale(1.02);}
-
-    /* ------------------------------
-       FOOTER
-    ------------------------------- */
-    footer{
-      background:var(--dark);
-      color:#fff;
-      text-align:center;
-      padding:1.5rem;
-      margin-top:3rem;
-    }
-
-    /* ------------------------------
-       MODAL IMAGE
-    ------------------------------- */
-    .modal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.6);
-      display:none;
-      justify-content:center;
-      align-items:center;
-      padding:1rem;
-      z-index:30;
-    }
-    .modal-inner{
-      background:#fff;
-      padding:1rem;
-      border-radius:var(--radius);
-      max-width:90%;
-      max-height:90%;
-      overflow:auto;
-      text-align:center;
-      position:relative;
-    }
-    .modal img{
-      max-width:100%;
-      border-radius:10px;
-    }
-    .modal-close{
-      position:absolute;
-      top:10px;
-      right:10px;
-      font-size:1.4rem;
-      background:#fff;
-      border-radius:50%;
-      border:0;
-      cursor:pointer;
-      width:35px;
-      height:35px;
-      box-shadow:var(--shadow);
-    }
-  </style>
+  <!-- Collegamento al file CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
   <div class="container">
-    <h1>Laboratorio Odontotecnico Rosso Marcello</h1>
+    <a href="#" class="header-brand">
+      <img src="foto/logo marcello.jpeg" alt="Logo Laboratorio Rosso Marcello" class="logo">
+      <h1>Laboratorio Odontotecnico Rosso Marcello</h1>
+    </a>
+    <button class="hamburger-menu" aria-label="Apri menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <nav>
       <a href="#servizi">Servizi</a>
       <a href="#chi-siamo">Chi Siamo</a>
       <a href="#gallery">Galleria</a>
+      <a href="#dove-siamo">Dove siamo</a>
       <a href="#contatti">Contatti</a>
     </nav>
   </div>
@@ -242,44 +39,44 @@
 <main>
 
   <!-- HERO -->
-  <section class="container hero">
+  <section class="container hero animate-on-scroll">
     <div class="hero-text">
       <h2>Protesi dentarie di precisione</h2>
       <p>
         Specializzato in <strong>protesi flessibili in Deflex</strong>, protesi mobili e protesi fisse estetiche.  
         Lavorazioni accurate, materiali certificati e un approccio professionale pensato per studi dentistici.
       </p>
-      <a href="#contatti" class="btn">Richiedi informazioni</a>
+      
     </div>
 
     <div class="hero-img">
-      <img src="https://via.placeholder.com/600x420?text=Laboratorio+Odontotecnico" alt="Laboratorio">
+      <img src="foto/deflex.jpeg" alt="Esempio di protesi flessibile in Deflex" loading="lazy">
     </div>
   </section>
 
   <!-- SERVIZI -->
-  <section id="servizi" class="container">
+  <section id="servizi" class="container animate-on-scroll">
     <h2>Servizi professionali</h2>
 
     <div class="cards">
-      <div class="card">
+      <div class="card animate-on-scroll" data-delay="0">
         <h3>Protesi Fisse</h3>
         <p>Corone e ponti estetici realizzati con precisione e materiali di alta qualità.</p>
       </div>
 
-      <div class="card">
+      <div class="card animate-on-scroll" data-delay="100">
         <h3>Protesi Mobili</h3>
         <p>Soluzioni confortevoli e personalizzate per ogni paziente.</p>
       </div>
 
-      <div class="card">
+      <div class="card animate-on-scroll" data-delay="200">
         <h3>Protesi Flessibili in Deflex</h3>
         <p>
           Specializzazione nella realizzazione di protesi flessibili: resistenti, elastiche e altamente confortevoli.
         </p>
       </div>
 
-      <div class="card">
+      <div class="card animate-on-scroll" data-delay="300">
         <h3>Riparazioni Veloci</h3>
         <p>Servizio rapido per riparazioni urgenti di dispositivi protesici.</p>
       </div>
@@ -287,73 +84,127 @@
   </section>
 
   <!-- CHI SIAMO -->
-  <section id="chi-siamo" class="container">
+  <section id="chi-siamo" class="container animate-on-scroll">
     <h2>Chi siamo</h2>
-    <p style="max-width:750px;">
-      Il Laboratorio Odontotecnico Rosso Marcello nasce dalla passione per la precisione e la cura del dettaglio.
-      Offriamo supporto professionale agli studi dentistici, integrando tecniche moderne e un’elevata specializzazione
-      nelle <strong>protesi flessibili in Deflex</strong>, garantendo qualità, funzionalità ed estetica.
-    </p>
+    <div class="about-wrapper">
+      <div class="about-text animate-on-scroll">
+        <p>
+          Il Laboratorio Odontotecnico Roso Marcello nasce dalla passione per la precisione e la cura del dettaglio.
+          Offriamo supporto professionale agli studi dentistici, integrando tecniche moderne e un’elevata specializzazione
+          nelle <strong>protesi flessibili in Deflex</strong>, garantendo qualità, funzionalità ed estetica.
+        </p>
+      </div>
+      <div class="about-img">
+        <img src="https://lh3.googleusercontent.com/p/AF1QipNSCnghZTPw3Vxg7UfDlb6VIZw3PlW1uTVrVAPS=s680-w680-h510-rw" alt="Esterno del laboratorio odontotecnico Rosso Marcello" class="animate-on-scroll" loading="lazy">
+      </div>
+    </div>
   </section>
 
   <!-- GALLERY -->
-  <section id="gallery" class="container">
+  <section id="gallery" class="container animate-on-scroll">
     <h2>Galleria lavori</h2>
-    <div class="gallery">
-      <img src="https://via.placeholder.com/400x300?text=Deflex+1" data-caption="Protesi flessibile Deflex">
-      <img src="https://via.placeholder.com/400x300?text=Protesi+2" data-caption="Lavorazione protesi">
-      <img src="https://via.placeholder.com/400x300?text=Laboratorio" data-caption="Il laboratorio">
-      <img src="https://via.placeholder.com/400x300?text=Qualità" data-caption="Controllo qualità">
+    <div class="gallery-wrapper" id="main-gallery">
+      <div class="gallery">
+        <video src="foto/video.mp4" autoplay loop muted playsinline title="Video dimostrativo di una protesi flessibile"></video>
+        <img src="foto/foto protesi.jpeg" alt="Protesi dentaria flessibile Deflex" loading="lazy">
+        <img src="foto/foto galleria 2.jpeg" alt="Lavorazione di una protesi in laboratorio" loading="lazy">
+        <img src="foto/foto galleria 3.jpeg" alt="Dettaglio di una protesi fissa" loading="lazy">
+        <img src="foto/foto galleria 4.jpeg" alt="Strumenti di precisione del laboratorio odontotecnico" loading="lazy">
+      </div>
+      <button class="carousel-btn prev" aria-label="Immagine precedente">‹</button>
+      <button class="carousel-btn next" aria-label="Immagine successiva">›</button>
+    </div>
+  </section>
+
+  <!-- SEZIONE IMPIANTI SU CLIENTI -->
+  <section id="clienti" class="container animate-on-scroll">
+    <h2>I nostri risultati sui pazienti</h2>
+    <p style="text-align: center; color: var(--muted); margin-bottom: 1.5rem;">La soddisfazione del paziente è il nostro obiettivo. Guarda alcuni esempi dei nostri lavori.</p>
+    <div class="gallery-wrapper" id="clients-gallery">
+      <div class="gallery">
+        <!-- Le immagini verranno inserite qui da JavaScript -->
+      </div>
+      <button class="carousel-btn prev" aria-label="Immagine precedente">‹</button>
+      <button class="carousel-btn next" aria-label="Immagine successiva">›</button>
+    </div>
+  </section>
+
+  <!-- DOVE SIAMO -->
+  <section id="dove-siamo" class="container animate-on-scroll">
+    <h2>Dove Siamo</h2>
+    <div class="map-wrapper">
+      <div class="map-container">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2816.892795255835!2d7.712745684499114!3d45.09325425660882!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4788727285b51b2f%3A0xcdd4323b449b080c!2sLABORATORIO%20ODONTOTECNICO%20ROSO%20MARCELLO!5e0!3m2!1sit!2sit!4v1717081831872!5m2!1sit!2sit" title="Mappa del Laboratorio Odontotecnico Roso Marcello" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="map-info">
+        <p>
+          <strong>Indirizzo:</strong><br>
+          Corso Regio Parco, 168<br>
+           10154 Torino (TO)
+        </p>
+        <a href="https://www.google.com/maps/dir//LABORATORIO+ODONTOTECNICO+ROSO+MARCELLO,+Corso+Regio+Parco,+168,+10154+Torino+TO/@45.0932505,7.7153206,540m/data=!3m1!1e3!4m17!1m7!3m6!1s0x4788727285b51b2f:0xcdd4323b449b080c!2sLABORATORIO+ODONTOTECNICO+ROSO+MARCELLO!8m2!3d45.0932505!4d7.7153206!16s%2Fg%2F11xyt7f3j4!4m8!1m0!1m5!1m1!1s0x4788727285b51b2f:0xcdd4323b449b080c!2m2!1d7.7153206!2d45.0932505!3e0?entry=ttu&g_ep=EgoyMDI1MTEzMC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" class="btn">Ottieni Indicazioni</a>
+      </div>
     </div>
   </section>
 
   <!-- CONTATTI -->
-  <section id="contatti" class="container">
-    <h2>Contatti</h2>
-    <p><strong>Email:</strong> info@rossomarcello.it</p>
-    <p><strong>Telefono:</strong> +39 000 123 4567</p>
-    <p><strong>Indirizzo:</strong> Via Esempio 123, Città</p>
+  <section id="contatti" class="container animate-on-scroll">
+    <div class="contatti-wrapper">
+      <h2>I nostri recapiti</h2>
+      <div class="contatti-info animate-on-scroll" data-delay="0">
+        <p>Siamo a tua disposizione per qualsiasi chiarimento o necessità. Contattaci direttamente o compila il modulo per richiedere un preventivo o maggiori informazioni.</p>
+        <p><strong>Email:</strong> <a href="mailto:jaredet438@bialode.com">jaredet438@bialode.com</a></p>
+        <p><strong>Telefono:</strong> <a href="tel:3381731927">338 1731927</a></p>
+        <a href="https://wa.me/393381731927" class="btn whatsapp-contact" target="_blank" rel="noopener noreferrer">Contattaci su WhatsApp</a>
+      </div>
+      <form id="contact-form" action="https://formsubmit.co/jaredet438@bialode.com" method="POST" class="contact-form animate-on-scroll" data-delay="200">
+        <input type="hidden" name="_next" value="https://hehetzu.github.io/Prova-Marcello-/">
+        <input type="hidden" name="_subject" value="Nuova richiesta di informazioni dal sito web">
+        <input type="hidden" name="_captcha" value="false">
+        <div class="form-group">
+          <label for="name">Il tuo Nome</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">La tua Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="message">Messaggio</label>
+          <textarea id="message" name="message" rows="5" placeholder="Scrivi qui la tua richiesta..." required></textarea>
+        </div>
+        <button type="submit" class="btn">Invia Messaggio</button>
+      </form>
+    </div>
   </section>
 </main>
 
 <footer>
-  © <span id="year"></span> Laboratorio Odontotecnico Rosso Marcello
+  <p>© <span id="year"></span> Laboratorio Odontotecnico Rosso Marcello. Tutti i diritti riservati.</p>
 </footer>
 
+<!-- MODALE PER IMMAGINI -->
+<div class="modal" id="image-modal">
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Chiudi">✕</button>
+    <button class="modal-nav prev" aria-label="Precedente">‹</button>
+    <img id="modal-img" src="" alt="Immagine ingrandita">
+    <button class="modal-nav next" aria-label="Successiva">›</button>
+  </div>
+</div>
 
-<!-- JAVASCRIPT -->
-<script>
-  document.getElementById("year").textContent = new Date().getFullYear();
+<!-- PULSANTE PREVENTIVO FISSO -->
+<a href="#contatti" class="fixed-quote-btn btn">Ottieni un Preventivo</a>
 
-  // Modal gallery
-  const modal = document.createElement("div");
-  modal.className = "modal";
-  modal.innerHTML = `
-    <div class="modal-inner">
-      <button class="modal-close">✕</button>
-      <img id="modal-img" src="">
-      <p id="modal-caption"></p>
-    </div>
-  `;
-  document.body.appendChild(modal);
+<!-- WHATSAPP FIXED BUTTON -->
+<a href="https://wa.me/393381731927" class="whatsapp-button" target="_blank" rel="noopener noreferrer">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="35" height="35" fill="#fff" aria-hidden="true">
+    <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.8 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+  </svg>
+  <span class="sr-only">Contattaci su WhatsApp</span>
+</a>
 
-  const modalImg = modal.querySelector("#modal-img");
-  const modalCaption = modal.querySelector("#modal-caption");
+<!-- Collegamento al file JavaScript -->
+<script src="script.js"></script>
 
-  document.querySelectorAll(".gallery img").forEach(img => {
-    img.addEventListener("click", () => {
-      modal.style.display = "flex";
-      modalImg.src = img.src;
-      modalCaption.textContent = img.dataset.caption;
-    });
-  });
-
-  modal.addEventListener("click", e => {
-    if (e.target.classList.contains("modal") || e.target.classList.contains("modal-close")) {
-      modal.style.display = "none";
-    }
-  });
-</script>
-
-</body>
 </html>
