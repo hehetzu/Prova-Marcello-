@@ -4,13 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Laboratorio odontotecnico a Torino specializzato in protesi flessibili Deflex, protesi mobili e fisse. Qualità, precisione e materiali certificati per studi dentistici.">
-  <title>Laboratorio Odontotecnico Rosso Marcello</title>
+  <title>Laboratorio Odontotecnico Roso Marcello</title>
 
-  <!-- Font professionale -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-  <!-- Collegamento al file CSS -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Preload dell'immagine Hero per migliorare il LCP (Largest Contentful Paint) -->
+  <link rel="preload" as="image" href="foto/deflex.jpeg">
 </head>
 
 <body>
@@ -18,15 +19,15 @@
 <header>
   <div class="container">
     <a href="#" class="header-brand">
-      <img src="foto/logo marcello.jpeg" alt="Logo Laboratorio Rosso Marcello" class="logo">
-      <h1>Laboratorio Odontotecnico Rosso Marcello</h1>
+      <img src="foto/logo marcello.jpeg" alt="Logo Laboratorio Roso Marcello" class="logo">
+      <h1>Laboratorio Odontotecnico Roso Marcello</h1>
     </a>
-    <button class="hamburger-menu" aria-label="Apri menu">
+    <button class="hamburger-menu" aria-label="Menu di navigazione" aria-controls="main-nav" aria-expanded="false">
       <span></span>
       <span></span>
       <span></span>
     </button>
-    <nav>
+    <nav id="main-nav">
       <a href="#servizi">Servizi</a>
       <a href="#chi-siamo">Chi Siamo</a>
       <a href="#gallery">Galleria</a>
@@ -38,7 +39,6 @@
 
 <main>
 
-  <!-- HERO -->
   <section class="container hero animate-on-scroll">
     <div class="hero-text">
       <h2>Protesi dentarie di precisione</h2>
@@ -50,11 +50,11 @@
     </div>
 
     <div class="hero-img">
-      <img src="foto/deflex.jpeg" alt="Esempio di protesi flessibile in Deflex" loading="lazy">
+      <!-- Rimosso loading="lazy" e aggiunto fetchpriority="high" perché è la prima immagine che l'utente vede -->
+      <img src="foto/deflex.jpeg" alt="Esempio di protesi flessibile in Deflex" fetchpriority="high">
     </div>
   </section>
 
-  <!-- SERVIZI -->
   <section id="servizi" class="container animate-on-scroll">
     <h2>Servizi professionali</h2>
 
@@ -83,7 +83,6 @@
     </div>
   </section>
 
-  <!-- CHI SIAMO -->
   <section id="chi-siamo" class="container animate-on-scroll">
     <h2>Chi siamo</h2>
     <div class="about-wrapper">
@@ -95,12 +94,11 @@
         </p>
       </div>
       <div class="about-img">
-        <img src="https://lh3.googleusercontent.com/p/AF1QipNSCnghZTPw3Vxg7UfDlb6VIZw3PlW1uTVrVAPS=s680-w680-h510-rw" alt="Esterno del laboratorio odontotecnico Rosso Marcello" class="animate-on-scroll" loading="lazy">
+        <img src="https://lh3.googleusercontent.com/p/AF1QipNSCnghZTPw3Vxg7UfDlb6VIZw3PlW1uTVrVAPS=s680-w680-h510-rw" alt="Esterno del laboratorio odontotecnico Roso Marcello" class="animate-on-scroll" loading="lazy">
       </div>
     </div>
   </section>
 
-  <!-- GALLERY -->
   <section id="gallery" class="container animate-on-scroll">
     <h2>Galleria lavori</h2>
     <div class="gallery-wrapper" id="main-gallery">
@@ -116,20 +114,17 @@
     </div>
   </section>
 
-  <!-- SEZIONE IMPIANTI SU CLIENTI -->
   <section id="clienti" class="container animate-on-scroll">
     <h2>I nostri risultati sui pazienti</h2>
     <p style="text-align: center; color: var(--muted); margin-bottom: 1.5rem;">La soddisfazione del paziente è il nostro obiettivo. Guarda alcuni esempi dei nostri lavori.</p>
     <div class="gallery-wrapper" id="clients-gallery">
       <div class="gallery">
-        <!-- Le immagini verranno inserite qui da JavaScript -->
       </div>
       <button class="carousel-btn prev" aria-label="Immagine precedente">‹</button>
       <button class="carousel-btn next" aria-label="Immagine successiva">›</button>
     </div>
   </section>
 
-  <!-- DOVE SIAMO -->
   <section id="dove-siamo" class="container animate-on-scroll">
     <h2>Dove Siamo</h2>
     <div class="map-wrapper">
@@ -147,19 +142,17 @@
     </div>
   </section>
 
-  <!-- CONTATTI -->
   <section id="contatti" class="container animate-on-scroll">
     <div class="contatti-wrapper">
       <h2>I nostri recapiti</h2>
       <div class="contatti-info animate-on-scroll" data-delay="0">
         <p>Siamo a tua disposizione per qualsiasi chiarimento o necessità. Contattaci direttamente o compila il modulo per richiedere un preventivo o maggiori informazioni.</p>
-        <p><strong>Email:</strong> <a href="mailto:jaredet438@bialode.com">jaredet438@bialode.com</a></p>
+        <p><strong>Email:</strong> <a href="mailto:sssss112awe21@gmail.com">sssss112awe21@gmail.com</a></p>
         <p><strong>Telefono:</strong> <a href="tel:3381731927">338 1731927</a></p>
         <a href="https://wa.me/393381731927" class="btn whatsapp-contact" target="_blank" rel="noopener noreferrer">Contattaci su WhatsApp</a>
       </div>
-      <form id="contact-form" action="https://formsubmit.co/jaredet438@bialode.com" method="POST" class="contact-form animate-on-scroll" data-delay="200">
-        <input type="hidden" name="_next" value="https://hehetzu.github.io/Prova-Marcello-/">
-        <input type="hidden" name="_subject" value="Nuova richiesta di informazioni dal sito web">
+      <form id="contact-form" action="https://formsubmit.co/sssss112awe21@gmail.com" method="POST" class="contact-form animate-on-scroll" data-delay="200">
+        <input type="hidden" name="_subject" value="Nuova richiesta dal sito web">
         <input type="hidden" name="_captcha" value="false">
         <div class="form-group">
           <label for="name">Il tuo Nome</label>
@@ -180,10 +173,18 @@
 </main>
 
 <footer>
-  <p>© <span id="year"></span> Laboratorio Odontotecnico Rosso Marcello. Tutti i diritti riservati.</p>
+  <div class="social-links">
+    <span>Seguici su:</span>
+    <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="24" height="24" fill="currentColor"><path d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z"/></svg>
+    </a>
+    <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="24" height="24" fill="currentColor"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.9 0-184.9zm-49.1 299.2c-20.5 20.5-47.9 23-106.7 23-59.9 0-87.3-2.5-106.7-23-19.4-19.4-21.9-47.3-21.9-106.7 0-60.4 2.5-87.3 21.9-106.7 19.4-19.4 47.3-21.9 106.7-21.9 59.9 0 87.3 2.5 106.7 21.9 19.4 19.4 21.9 47.3 21.9 106.7 0 59.9-2.5 87.3-21.9 106.7z"/></svg>
+    </a>
+  </div>
+  <p>© <span id="year"></span> Laboratorio Odontotecnico Roso Marcello. Tutti i diritti riservati.</p>
 </footer>
 
-<!-- MODALE PER IMMAGINI -->
 <div class="modal" id="image-modal">
   <div class="modal-inner">
     <button class="modal-close" aria-label="Chiudi">✕</button>
@@ -193,10 +194,8 @@
   </div>
 </div>
 
-<!-- PULSANTE PREVENTIVO FISSO -->
 <a href="#contatti" class="fixed-quote-btn btn">Ottieni un Preventivo</a>
 
-<!-- WHATSAPP FIXED BUTTON -->
 <a href="https://wa.me/393381731927" class="whatsapp-button" target="_blank" rel="noopener noreferrer">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="35" height="35" fill="#fff" aria-hidden="true">
     <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.8 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
@@ -204,7 +203,7 @@
   <span class="sr-only">Contattaci su WhatsApp</span>
 </a>
 
-<!-- Collegamento al file JavaScript -->
 <script src="script.js"></script>
 
+</body>
 </html>

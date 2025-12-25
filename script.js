@@ -1,44 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Imposta l'anno corrente nel footer
   const yearSpan = document.getElementById('year');
   if (yearSpan) {
     yearSpan.textContent = new Date().getFullYear();
   }
 
-  // --- MENU HAMBURGER ---
   const hamburger = document.querySelector('.hamburger-menu');
   const nav = document.querySelector('header nav');
   if (hamburger && nav) {
     hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('is-open');
+      const isOpen = hamburger.classList.toggle('is-open');
       nav.classList.toggle('is-open');
+      hamburger.setAttribute('aria-expanded', isOpen);
     });
 
     document.querySelectorAll('nav a').forEach(link => {
       link.addEventListener('click', () => {
         hamburger.classList.remove('is-open');
         nav.classList.remove('is-open');
+        hamburger.setAttribute('aria-expanded', 'false');
       });
     });
   }
 
-  // --- GALLERIE E MODALE ---
   const modal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
   let currentGalleryItems = [];
   let currentIndex = 0;
 
-  // Funzioni per la modale
   const openModal = () => modal.classList.add('is-open');
   const closeModal = () => modal.classList.remove('is-open');
 
   function showModalImage(index) {
-    // Rende la navigazione infinita (loop)
     const newIndex = (index + currentGalleryItems.length) % currentGalleryItems.length;
 
     const item = currentGalleryItems[newIndex];
-    // La modale mostra solo immagini, quindi per i video usiamo il 'poster' o un'immagine di fallback
     modalImg.src = item.tagName === 'VIDEO' ? (item.poster || 'foto/deflex.jpeg') : item.src;
     currentIndex = newIndex;
   }
@@ -53,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.querySelector('.next').addEventListener('click', () => showModalImage(currentIndex + 1));
   }
 
-  // Funzione per inizializzare una galleria
   function setupGallery(galleryId) {
     const galleryWrapper = document.getElementById(galleryId);
     if (!galleryWrapper) return;
@@ -63,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = galleryWrapper.querySelector('.carousel-btn.next');
     const items = Array.from(gallery.querySelectorAll('img, video'));
 
-    // Gestione click sulle immagini per aprire la modale
     items.forEach((item, index) => {
       if (item.tagName === 'IMG') {
         item.addEventListener('click', () => {
@@ -74,12 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Gestione pulsanti carosello
     if (prevBtn && nextBtn) {
-      const scrollAmount = gallery.clientWidth; // Scorre per l'intera larghezza visibile
+      const scrollAmount = gallery.clientWidth;
       
       nextBtn.addEventListener('click', () => {
-        // Se siamo quasi alla fine, torna all'inizio
         if (gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 10) {
           gallery.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
@@ -88,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       prevBtn.addEventListener('click', () => {
-        // Se siamo all'inizio, vai alla fine
         if (gallery.scrollLeft === 0) {
           gallery.scrollTo({ left: gallery.scrollWidth, behavior: 'smooth' });
         } else {
@@ -97,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Gestione trascinamento per scorrere
     let isDown = false;
     let startX;
     let scrollLeft;
@@ -119,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Popola e inizializza la galleria dei clienti
   const clientsGalleryContainer = document.querySelector('#clients-gallery .gallery');
   if (clientsGalleryContainer) {
     const clientImages = [
@@ -131,12 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ).join('');
   }
 
-  // Inizializza entrambe le gallerie
   setupGallery('main-gallery');
   setupGallery('clients-gallery');
 
 
-  // --- ANIMAZIONI ALLO SCORRIMENTO ---
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -153,20 +140,42 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(el);
   });
 
-  // --- GESTIONE FORM CONTATTI ---
   const contactForm = document.getElementById('contact-form');
   if(contactForm) {
     contactForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
       const submitButton = contactForm.querySelector('button[type="submit"]');
-      // Aggiunge un feedback visivo all'invio
-      setTimeout(() => {
-        submitButton.textContent = 'Invio in corso...';
-        submitButton.disabled = true;
-      }, 100);
+      const originalText = submitButton.textContent;
+
+      submitButton.textContent = 'Invio in corso...';
+      submitButton.disabled = true;
+
+      fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: {
+            'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('Messaggio inviato con successo! Ti risponderemo al più presto.');
+          contactForm.reset();
+        } else {
+          alert('Si è verificato un errore durante l\'invio. Riprova più tardi.');
+        }
+      })
+      .catch(error => {
+        alert('Errore di connessione. Controlla la tua rete e riprova.');
+      })
+      .finally(() => {
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+      });
     });
   }
 
-  // --- NASCONDI PULSANTE PREVENTIVO NELLA SEZIONE CONTATTI ---
   const contactSection = document.getElementById('contatti');
   const quoteButton = document.querySelector('.fixed-quote-btn');
 
@@ -174,14 +183,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttonObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          // Se la sezione contatti è visibile, nascondi il pulsante
           quoteButton.classList.add('is-hidden');
         } else {
-          // Altrimenti, mostralo
           quoteButton.classList.remove('is-hidden');
         }
       });
-    }, { threshold: 0.1 }); // Si attiva quando il 10% della sezione è visibile
+    }, { threshold: 0.1 });
     buttonObserver.observe(contactSection);
   }
 });
