@@ -1,5 +1,9 @@
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 :root{
@@ -22,6 +26,8 @@ body{
   color:var(--text);
   line-height:1.6;
   overflow-x: hidden; /* Impedisce alla pagina di "ballare" orizzontalmente */
+  width: 100%;
+  max-width: 100%;
 }
 
 a{text-decoration:none; color:inherit;}
@@ -93,7 +99,7 @@ nav a:hover{color:var(--primary);}
   height:0.25rem;
   background:var(--dark);
   border-radius:10px;
-  transition: all 0.3s linear;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position:relative;
   transform-origin:center;
 }
@@ -567,7 +573,7 @@ footer{
     justify-content:center;
     gap:2rem;
     transform: translateX(100%);
-    transition: transform 0.3s ease-in-out, visibility 0.3s;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
     box-shadow: none;
     visibility: hidden;
   }
@@ -599,6 +605,9 @@ footer{
   .hero-text p {
     margin: 0 auto;
   }
+  .hero-text {
+    min-width: 100%;
+  }
 
   .hero-img {
     width: 100%;
@@ -627,6 +636,10 @@ footer{
   }
 
   .contatti-info, .contact-form {
+    min-width: 100%;
+  }
+
+  .about-text, .about-img {
     min-width: 100%;
   }
 
