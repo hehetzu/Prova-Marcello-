@@ -191,4 +191,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { threshold: 0.1 });
     buttonObserver.observe(contactSection);
   }
+
+  const footer = document.querySelector('footer');
+  const whatsappButton = document.querySelector('.whatsapp-button');
+
+  if (footer && whatsappButton) {
+    const footerObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          whatsappButton.classList.add('is-hidden');
+        } else {
+          whatsappButton.classList.remove('is-hidden');
+        }
+      });
+    }, { threshold: 0.1 });
+    footerObserver.observe(footer);
+  }
 });
