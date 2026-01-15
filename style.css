@@ -300,6 +300,7 @@ section h2 {
   transform: translateX(-50%);
   z-index: 1100;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: opacity 0.3s, visibility 0.3s;
 }
 
 .whatsapp-button {
@@ -315,6 +316,13 @@ section h2 {
   z-index: 1100;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   transition: opacity 0.3s, visibility 0.3s;
+}
+
+.fixed-quote-btn.is-hidden,
+.whatsapp-button.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
