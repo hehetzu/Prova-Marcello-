@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Inizializzazione EmailJS (Sostituisci con la tua Public Key)
+  // La trovi in Account > API Keys su https://dashboard.emailjs.com/
+  if (window.emailjs) emailjs.init("JbtNJPR5Mob1J9gSu");
+
   const yearSpan = document.getElementById('year');
   if (yearSpan) {
     yearSpan.textContent = new Date().getFullYear();
@@ -151,60 +155,185 @@ document.addEventListener('DOMContentLoaded', () => {
       submitButton.textContent = 'Invio in corso...';
       submitButton.disabled = true;
 
-      fetch(contactForm.action, {
-        method: 'POST',
-        body: new FormData(contactForm),
-        headers: {
-            'Accept': 'application/json'
-        }
-      })
-      .then(response => {
-        if (response.ok) {
-          alert('Messaggio inviato con successo! Ti risponderemo al più presto.');
-          contactForm.reset();
-        } else {
-          alert('Si è verificato un errore durante l\'invio. Riprova più tardi.');
-        }
-      })
-      .catch(error => {
-        alert('Errore di connessione. Controlla la tua rete e riprova.');
-      })
-      .finally(() => {
+      // Funzione per gestire l'errore finale
+      const handleError = (err) => {
+        console.error('Errore invio:', err);
+        alert('Si è verificato un errore. Per favore contattaci telefonicamente o su WhatsApp.');
         submitButton.textContent = originalText;
         submitButton.disabled = false;
+      };
+
+      // Funzione per gestire il successo
+      const handleSuccess = () => {
+        alert('Messaggio inviato con successo! Ti risponderemo al più presto.');
+        contactForm.reset();
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+        if (window.closeContactPopup) window.closeContactPopup(); // Chiude il popup del form
+      };
+
+      const formData = new FormData(contactForm);
+
+      // 1. Invio a FormSubmit (Email)
+      const emailPromise = fetch(contactForm.action, {
+        method: "POST",
+        body: formData,
+        headers: { 'Accept': 'application/json' }
       });
+
+      // 2. Invio a Google Script (Foglio Google)
+      const googleScriptURL = "https://script.google.com/macros/s/AKfycbyIsiZx_rIJaiuvTGiRG8mZVega6EddbRI-6B_2_8Vk58wuRBf-SaIZPPN_DvJBlyju/exec";
+      const sheetPromise = fetch(googleScriptURL, {
+        method: "POST",
+        body: formData
+      });
+
+      // Gestiamo entrambi gli invii e controlliamo i risultati individualmente
+      Promise.allSettled([emailPromise, sheetPromise])
+        .then(([emailResult, sheetResult]) => {
+
+          const emailOK = emailResult.status === 'fulfilled' && emailResult.value.ok;
+          const sheetOK = sheetResult.status === 'fulfilled' && sheetResult.value.ok;
+
+          if (sheetResult.status === 'rejected' || !sheetOK) {
+            console.warn("Salvataggio su Foglio Google fallito:", sheetResult.reason || "La risposta non era OK.");
+          } else {
+            console.log("✅ Dati salvati correttamente su Google Sheet.");
+          }
+
+          if (emailOK) {
+            // L'email (azione principale) è andata a buon fine.
+            handleSuccess();
+            if (!sheetOK) {
+              console.warn("Attenzione: il backup dei dati sul foglio Google potrebbe non essere andato a buon fine.");
+            }
+          } else {
+            // Se l'invio dell'email fallisce, è un errore critico.
+            throw new Error(emailResult.reason || 'Errore durante l\'invio del modulo via email.');
+          }
+        }).catch(handleError);
     });
   }
 
   const contactSection = document.getElementById('contatti');
   const quoteButton = document.querySelector('.fixed-quote-btn');
 
-  if (contactSection && quoteButton) {
-    const buttonObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          quoteButton.classList.add('is-hidden');
-        } else {
-          quoteButton.classList.remove('is-hidden');
-        }
-      });
-    }, { threshold: 0.1 });
-    buttonObserver.observe(contactSection);
+  // Gestione Popup Form
+  window.closeContactPopup = () => {}; // Crea una funzione globale vuota
+  const contactInfo = document.querySelector('.contatti-info');
+  if (contactForm) {
+    contactForm.style.display = 'none';
   }
 
+  if (contactForm && contactInfo) {
+    // Aggiungi campo telefono dinamicamente
+    if (!contactForm.querySelector('[name="telefono"]')) {
+      const emailInput = contactForm.querySelector('input[name="email"]');
+      if (emailInput) {
+        const emailGroup = emailInput.closest('.form-group');
+        if (emailGroup) {
+          const phoneGroup = document.createElement('div');
+          phoneGroup.className = 'form-group';
+          phoneGroup.innerHTML = `
+            <label for="telefono">Telefono</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="Il tuo numero di telefono">
+          `;
+          emailGroup.parentNode.insertBefore(phoneGroup, emailGroup.nextSibling);
+        }
+      }
+    }
+
+    // 1. Crea il contenitore Modale
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal';
+    modalOverlay.style.zIndex = '10000';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'popup-form-content';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = '&times;';
+    closeBtn.className = 'popup-close-btn';
+
+    // 2. Sposta il form nel modale
+    contactForm.parentNode.removeChild(contactForm);
+    contactForm.classList.remove('animate-on-scroll');
+    contactForm.style.display = 'block';
+    modalContent.appendChild(closeBtn);
+    modalContent.appendChild(contactForm);
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    // 3. Funzioni e Eventi
+    const openPopup = () => modalOverlay.classList.add('is-open');
+    const closePopup = () => modalOverlay.classList.remove('is-open');
+
+    window.closeContactPopup = closePopup; // Rendi la funzione di chiusura accessibile globalmente
+    closeBtn.addEventListener('click', closePopup);
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closePopup();
+    });
+
+    // 4. Aggiungi bottone vicino ai contatti
+    const infoBtn = document.createElement('button');
+    infoBtn.textContent = 'Richiedi Preventivo';
+    infoBtn.className = 'btn';
+    infoBtn.addEventListener('click', openPopup);
+    contactInfo.appendChild(infoBtn);
+
+    // 5. Collega anche il bottone fisso
+    if (quoteButton) {
+      quoteButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        openPopup();
+        contactForm.style.display = 'block';
+        contactForm.classList.add('is-visible');
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+        quoteButton.classList.add('is-hidden');
+      });
+    }
+  }
+
+  // --- Gestione visibilità bottoni fissi (Preventivo e WhatsApp) ---
   const footer = document.querySelector('footer');
   const whatsappButton = document.querySelector('.whatsapp-button');
+  const scrollThreshold = 200; // Mostra i bottoni dopo 200px di scroll
 
-  if (footer && whatsappButton) {
-    const footerObserver = new IntersectionObserver((entries) => {
+  // Stato di visibilità delle sezioni che nascondono i bottoni
+  let quoteSectionIsVisible = false;
+  let whatsappSectionIsVisible = false;
+
+  // Funzione centralizzata per aggiornare la visibilità dei bottoni
+  function updateFixedButtonsVisibility() {
+    const isScrolled = window.scrollY > scrollThreshold;
+
+    if (quoteButton) {
+      const shouldHide = !isScrolled || quoteSectionIsVisible;
+      quoteButton.classList.toggle('is-hidden', shouldHide);
+    }
+    if (whatsappButton) {
+      const shouldHide = !isScrolled || whatsappSectionIsVisible;
+      whatsappButton.classList.toggle('is-hidden', shouldHide);
+    }
+  }
+
+  // 1. Esegui il controllo iniziale e imposta il listener per lo scroll
+  updateFixedButtonsVisibility();
+  window.addEventListener('scroll', updateFixedButtonsVisibility, { passive: true });
+
+  // 2. Imposta un unico IntersectionObserver per monitorare le sezioni rilevanti
+  if (contactSection || footer) {
+    const intersectionStates = new Map();
+    const visibilityObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          whatsappButton.classList.add('is-hidden');
-        } else {
-          whatsappButton.classList.remove('is-hidden');
-        }
+        intersectionStates.set(entry.target, entry.isIntersecting);
       });
+      quoteSectionIsVisible = intersectionStates.get(contactSection) || false;
+      whatsappSectionIsVisible = (intersectionStates.get(contactSection) || false) || (intersectionStates.get(footer) || false);
+      updateFixedButtonsVisibility();
     }, { threshold: 0.1 });
-    footerObserver.observe(footer);
+
+    if (contactSection) visibilityObserver.observe(contactSection);
+    if (footer) visibilityObserver.observe(footer);
   }
 });
