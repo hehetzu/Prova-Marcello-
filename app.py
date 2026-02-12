@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # Inserisci qui il tuo token e chat_id Telegram
 TELEGRAM_TOKEN = "8026656517:AAEaT7Yah7qQ2JOJ1ozh7lJ-RY7YgvETaIA"
-TELEGRAM_CHAT_ID = "TUO_CHAT_ID"
+TELEGRAM_CHAT_ID = "147586543"
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
