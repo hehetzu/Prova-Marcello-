@@ -290,69 +290,6 @@ s0.parentNode.insertBefore(s1,s0);
   });
 </script>
 
-<!-- SCRIPT PER INVIO TELEGRAM -->
-<script>
-document.getElementById("contact-form").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const form = this;
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const statusEl = document.getElementById('contact-status');
-  const nome = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const messaggio = document.getElementById("message").value.trim();
-  const telefono = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
-  const dataApp = document.getElementById("booking_date").value;
-  const oraApp = document.getElementById("booking_time").value;
-
-  // Basic phone validation (optional): allow digits, +, spaces
-  if (telefono && !/^[0-9+\s.-]{6,20}$/.test(telefono)) {
-    statusEl.textContent = 'Formato numero di telefono non valido.';
-    return;
-  }
-
-  submitBtn.disabled = true;
-  statusEl.textContent = 'Invio in corso...';
-
-  const payload = {
-    nome: nome,
-    email: email,
-    telefono: telefono,
-    data: (dataApp || '') + (oraApp ? ' ' + oraApp : ''),
-    messaggio: messaggio
-  };
-
-  // Helper: timeout for fetch
-  const fetchWithTimeout = (url, options, timeout = 5000) => {
-    return Promise.race([
-      fetch(url, options),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
-    ]);
-  };
-
-  (async () => {
-    try {
-      // Try sending webhook (non-blocking for user, but we await to give better feedback)
-      const resp = await fetchWithTimeout('https://marcello-bot.onrender.com/webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      }, 5000);
-
-      if (!resp.ok) throw new Error('response not ok');
-      statusEl.textContent = 'Notifica inviata; inoltro del messaggio...';
-    } catch (err) {
-      // Log and continue with form submission to FormSubmit (fallback)
-      console.warn('Webhook error:', err);
-      statusEl.textContent = 'Impossibile inviare la notifica — si procede comunque con l\'invio del messaggio.';
-    }
-
-    // Submit to FormSubmit (use native submit to avoid re-triggering this handler)
-    form.removeEventListener('submit', arguments.callee);
-    form.submit();
-  })();
-
-});
-</script>
 <script src="script.js"></script>
 
 </body>

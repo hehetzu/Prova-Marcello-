@@ -39,22 +39,26 @@ def webhook():
     mail_subject = "Risposta alla tua richiesta - Laboratorio Roso Marcello"
     mail_body = f"Gentile {nome},\n\nAbbiamo ricevuto la tua richiesta dal sito web.\n\nCordiali saluti,\nLaboratorio Odontotecnico Roso Marcello"
     mail_url = f"mailto:{email}?subject={urllib.parse.quote(mail_subject)}&body={urllib.parse.quote(mail_body)}"
+    
+    # Aggiungiamo il link email nel testo (i bottoni Telegram non supportano "mailto:")
+    text += f"\n[📧 Clicca qui per rispondere via Email]({mail_url})"
 
     # Creazione Bottoni (Inline Keyboard)
     buttons = []
     if clean_phone:
         buttons.append({"text": "💬 WhatsApp", "url": wa_url})
-    buttons.append({"text": "📧 Rispondi Email", "url": mail_url})
     
-    keyboard = {"inline_keyboard": [buttons]}
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    # Se c'è il telefono, mostriamo il bottone WhatsApp
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": text,
-        "parse_mode": "Markdown",
-        "reply_markup": json.dumps(keyboard)
+        "parse_mode": "Markdown"
     }
+    
+    if buttons:
+        payload["reply_markup"] = json.dumps({"inline_keyboard": [buttons]})
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     requests.post(url, data=payload)
 
     return {"status": "ok"}, 200

@@ -188,11 +188,21 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.set('_captcha', 'false'); // Assicura che il captcha sia disattivato
       // Rimuoviamo temporaneamente il template 'box' per garantire la consegna
 
-      const clientEmail = formData.get('email');
-      if (clientEmail) {
-        // Aggiungi CC per essere sicuri che il cliente riceva una copia dei dati
-        formData.set('_cc', clientEmail);
-      }
+      // Preparazione dati per Telegram
+      const telegramPayload = {
+        nome: formData.get('name'),
+        email: formData.get('email'),
+        telefono: formData.get('phone') || formData.get('telefono'),
+        messaggio: formData.get('message'),
+        data: (formData.get('data_appuntamento') || '') + (formData.get('ora_appuntamento') ? ' ' + formData.get('ora_appuntamento') : '')
+      };
+
+      // 0. Invio a Telegram (Bot)
+      const telegramPromise = fetch('https://marcello-bot.onrender.com/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(telegramPayload)
+      }).catch(err => console.warn("Errore Telegram:", err)); // Non blocca il resto se fallisce
 
       // 1. Invio a FormSubmit (Email)
       const emailPromise = fetch(contactForm.action, {
@@ -208,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       // Gestiamo entrambi gli invii e controlliamo i risultati individualmente
-      Promise.allSettled([emailPromise, sheetPromise])
-        .then(async ([emailResult, sheetResult]) => {
+      Promise.allSettled([emailPromise, sheetPromise, telegramPromise])
+        .then(async ([emailResult, sheetResult, telegramResult]) => {
 
           const emailOK = emailResult.status === 'fulfilled' && emailResult.value.ok;
           const sheetOK = sheetResult.status === 'fulfilled' && sheetResult.value.ok;
@@ -264,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (contactForm && contactInfo) {
     // Aggiungi campo telefono dinamicamente
-    if (!contactForm.querySelector('[name="telefono"]')) {
+    if (!contactForm.querySelector('[name="telefono"]') && !contactForm.querySelector('[name="phone"]')) {
       const emailInput = contactForm.querySelector('input[name="email"]');
       if (emailInput) {
         const emailGroup = emailInput.closest('.form-group');
