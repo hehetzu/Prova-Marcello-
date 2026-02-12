@@ -204,28 +204,36 @@
         <p><strong>Telefono:</strong> <a href="tel:3381731927">338 1731927</a></p>
         <a href="https://wa.me/393381731927" class="btn whatsapp-contact" target="_blank" rel="noopener noreferrer">Contattaci su WhatsApp</a>
       </div>
-      <form id="contact-form" action="https://formsubmit.co/contatti.rosomarcello@gmail.com" method="POST" class="contact-form animate-on-scroll" data-delay="200" data-aos="fade-left">
-        <input type="hidden" name="_subject" value="Nuova richiesta dal sito web">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_autoresponse_subject" value="Conferma Ricezione Richiesta - Laboratorio Roso Marcello">
-321        <input type="text" name="_honey" style="display:none">
-        <input type="hidden" name="data_appuntamento" id="booking_date">
-        <input type="hidden" name="ora_appuntamento" id="booking_time">
-        <input type="hidden" name="tipo_richiesta" id="request_type" value="generico">
-        <div class="form-group">
-          <label for="name">Il tuo Nome</label>
-          <input type="text" id="name" name="name" required>
-        </div>
-        <div class="form-group">
-          <label for="email">La tua Email</label>
-          <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-          <label for="message">Messaggio</label>
-          <textarea id="message" name="message" rows="5" placeholder="Scrivi qui la tua richiesta..." required></textarea>
-        </div>
-        <button type="submit" class="btn">Invia Messaggio</button>
-      </form>
+        <!-- FORM MODIFICATO -->
+        <form id="contact-form" action="https://formsubmit.co/contatti.rosomarcello@gmail.com" method="POST" class="contact-form animate-on-scroll" data-delay="200" data-aos="fade-left">
+          <input type="hidden" name="_subject" value="Nuova richiesta dal sito web">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_autoresponse_subject" value="Conferma Ricezione Richiesta - Laboratorio Roso Marcello">
+          <input type="text" name="_honey" style="display:none">
+
+          <input type="hidden" name="data_appuntamento" id="booking_date">
+          <input type="hidden" name="ora_appuntamento" id="booking_time">
+          <input type="hidden" name="tipo_richiesta" id="request_type" value="generico">
+
+          <div class="form-group">
+            <label for="name">Il tuo Nome</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">La tua Email</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Il tuo Telefono</label>
+            <input type="tel" id="phone" name="phone" placeholder="es. 3381234567">
+          </div>
+          <div class="form-group">
+            <label for="message">Messaggio</label>
+            <textarea id="message" name="message" rows="5" placeholder="Scrivi qui la tua richiesta..." required></textarea>
+          </div>
+          <button type="submit" class="btn">Invia Messaggio</button>
+          <div id="contact-status" class="contact-status" aria-live="polite" style="margin-top:0.8rem;color:var(--muted);"></div>
+        </form>
     </div>
   </section>
 </main>
@@ -259,6 +267,19 @@
   <span class="sr-only">Contattaci su WhatsApp</span>
 </a>
 
+<!-- Tawk.to Live Chat -->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/67b73859c313276261136735/1ikhm662p';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+
 <!-- Initialize AOS Animation -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
@@ -267,6 +288,70 @@
     once: true,
     offset: 100
   });
+</script>
+
+<!-- SCRIPT PER INVIO TELEGRAM -->
+<script>
+document.getElementById("contact-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const form = this;
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const statusEl = document.getElementById('contact-status');
+  const nome = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const messaggio = document.getElementById("message").value.trim();
+  const telefono = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
+  const dataApp = document.getElementById("booking_date").value;
+  const oraApp = document.getElementById("booking_time").value;
+
+  // Basic phone validation (optional): allow digits, +, spaces
+  if (telefono && !/^[0-9+\s.-]{6,20}$/.test(telefono)) {
+    statusEl.textContent = 'Formato numero di telefono non valido.';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  statusEl.textContent = 'Invio in corso...';
+
+  const payload = {
+    nome: nome,
+    email: email,
+    telefono: telefono,
+    data: (dataApp || '') + (oraApp ? ' ' + oraApp : ''),
+    messaggio: messaggio
+  };
+
+  // Helper: timeout for fetch
+  const fetchWithTimeout = (url, options, timeout = 5000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout))
+    ]);
+  };
+
+  (async () => {
+    try {
+      // Try sending webhook (non-blocking for user, but we await to give better feedback)
+      const resp = await fetchWithTimeout('https://marcello-bot.onrender.com/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }, 5000);
+
+      if (!resp.ok) throw new Error('response not ok');
+      statusEl.textContent = 'Notifica inviata; inoltro del messaggio...';
+    } catch (err) {
+      // Log and continue with form submission to FormSubmit (fallback)
+      console.warn('Webhook error:', err);
+      statusEl.textContent = 'Impossibile inviare la notifica — si procede comunque con l\'invio del messaggio.';
+    }
+
+    // Submit to FormSubmit (use native submit to avoid re-triggering this handler)
+    form.removeEventListener('submit', arguments.callee);
+    form.submit();
+  })();
+
+});
 </script>
 <script src="script.js"></script>
 

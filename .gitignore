@@ -1,6 +1,5 @@
-# File di sistema
-Thumbs.db
+__pycache__/
+*.py[cod]
+venv/
+.env
 .DS_Store
-
-# Log e file temporanei
-*.log
