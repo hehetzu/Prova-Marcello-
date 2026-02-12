@@ -1,6 +1,8 @@
 from flask import Flask, request
 import requests
 import os
+import json
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -17,17 +19,43 @@ def webhook():
     messaggio = data.get("messaggio", "")
     data_app = data.get("data", "")
 
-    text = f"📩 *Nuova richiesta dal sito*\n\n"
-    text += f"*Nome:* {nome}\n*Email:* {email}\n"
+    # Determina il titolo in base alla presenza della data
+    titolo = "📅 *Nuovo Appuntamento*" if data_app else "📄 *Richiesta Preventivo/Info*"
+
+    text = f"{titolo}\n\n"
+    text += f"*Nome:* {nome}\n"
+    text += f"*Email:* {email}\n"
     if telefono:
         text += f"*Telefono:* {telefono}\n"
     if data_app:
-        text += f"*Appuntamento:* {data_app}\n"
-    text += f"*Messaggio:* {messaggio}\n\n"
-    text += f"[Chat WhatsApp](https://wa.me/{telefono}) | [Invia Email](mailto:{email})"
+        text += f"*Data richiesta:* {data_app}\n"
+    text += f"\n*Messaggio:*\n{messaggio}\n"
+
+    # Preparazione Link WhatsApp e Email con testi preimpostati
+    clean_phone = telefono.replace(" ", "").replace("-", "") if telefono else ""
+    wa_text = f"Ciao {nome}, ho ricevuto la tua richiesta dal sito. Come posso aiutarti?"
+    wa_url = f"https://wa.me/{clean_phone}?text={urllib.parse.quote(wa_text)}"
+    
+    mail_subject = "Risposta alla tua richiesta - Laboratorio Roso Marcello"
+    mail_body = f"Gentile {nome},\n\nAbbiamo ricevuto la tua richiesta dal sito web.\n\nCordiali saluti,\nLaboratorio Odontotecnico Roso Marcello"
+    mail_url = f"mailto:{email}?subject={urllib.parse.quote(mail_subject)}&body={urllib.parse.quote(mail_body)}"
+
+    # Creazione Bottoni (Inline Keyboard)
+    buttons = []
+    if clean_phone:
+        buttons.append({"text": "💬 WhatsApp", "url": wa_url})
+    buttons.append({"text": "📧 Rispondi Email", "url": mail_url})
+    
+    keyboard = {"inline_keyboard": [buttons]}
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "Markdown"})
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": text,
+        "parse_mode": "Markdown",
+        "reply_markup": json.dumps(keyboard)
+    }
+    requests.post(url, data=payload)
 
     return {"status": "ok"}, 200
 
