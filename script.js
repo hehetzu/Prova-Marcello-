@@ -146,11 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // URL del tuo Google Apps Script (Assicurati di aggiornarlo se fai una Nuova Distribuzione)
-  const googleScriptURL = "https://script.google.com/macros/s/AKfycbznIFFg9f973DbZyLkAx_nm9NH_n13uTn1lsnXxdcGDsKyZOdNMOuZvPgnGb_W9gzvd/exec";
+  const googleScriptURL = "https://script.google.com/macros/s/AKfycbwoeUyQyflLQEajTgYLfK47mzyBZuaemDWWKVpfhwPZTvS9iZ0ekt0KDtusjLkHYNm1/exec";
 
   const contactForm = document.getElementById('contact-form');
   if(contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+    contactForm.addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const submitButton = contactForm.querySelector('button[type="submit"]');
@@ -194,71 +194,53 @@ document.addEventListener('DOMContentLoaded', () => {
         email: formData.get('email'),
         telefono: formData.get('phone') || formData.get('telefono'),
         messaggio: formData.get('message'),
-        data: (formData.get('data_appuntamento') || '') + (formData.get('ora_appuntamento') ? ' ' + formData.get('ora_appuntamento') : '')
+        data: (formData.get('data_appuntamento') && formData.get('ora_appuntamento')) ? (formData.get('data_appuntamento') + ' ' + formData.get('ora_appuntamento')) : ''
       };
 
-      // 0. Invio a Telegram (Bot)
-      const telegramPromise = fetch('https://marcello-bot.onrender.com/webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(telegramPayload)
-      }).catch(err => console.warn("Errore Telegram:", err)); // Non blocca il resto se fallisce
+      try {
+        // 1. PRIMA controlliamo e salviamo su Google Sheet (per evitare doppie prenotazioni)
+        const sheetResponse = await fetch(googleScriptURL, {
+          method: "POST",
+          body: formData
+        });
+        
+        const sheetData = await sheetResponse.json();
+        
+        if (sheetData.result === 'error') {
+          // Se Google dice che è occupato o c'è un errore, ci fermiamo QUI.
+          alert("⚠️ " + sheetData.message);
+          submitButton.textContent = originalText;
+          submitButton.disabled = false;
+          return; // Stop
+        }
 
-      // 1. Invio a FormSubmit (Email)
-      const emailPromise = fetch(contactForm.action, {
-        method: "POST",
-        body: formData,
-        headers: { 'Accept': 'application/json' }
-      });
+        console.log("✅ Prenotazione confermata su Google Sheet.");
 
-      // 2. Invio a Google Script (Foglio Google)
-      const sheetPromise = fetch(googleScriptURL, {
-        method: "POST",
-        body: formData
-      });
+        // 2. Se Google è OK, inviamo a Telegram e Email in parallelo
+        const telegramPromise = fetch('https://marcello-bot.onrender.com/webhook', {
+        // const telegramPromise = fetch('http://localhost:5000/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(telegramPayload)
+        }).catch(err => console.warn("Errore Telegram:", err));
 
-      // Gestiamo entrambi gli invii e controlliamo i risultati individualmente
-      Promise.allSettled([emailPromise, sheetPromise, telegramPromise])
-        .then(async ([emailResult, sheetResult, telegramResult]) => {
+        const emailPromise = fetch(contactForm.action, {
+          method: "POST",
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
 
-          const emailOK = emailResult.status === 'fulfilled' && emailResult.value.ok;
-          const sheetOK = sheetResult.status === 'fulfilled' && sheetResult.value.ok;
+        const [emailResult] = await Promise.all([emailPromise, telegramPromise]);
 
-          if (sheetResult.status === 'rejected' || !sheetOK) {
-            console.warn("Salvataggio su Foglio Google fallito:", sheetResult.reason || "La risposta non era OK.");
-          } else {
-            console.log("✅ Dati salvati correttamente su Google Sheet.");
-          }
+        if (emailResult.ok) {
+          handleSuccess();
+        } else {
+          throw new Error("Errore invio email FormSubmit");
+        }
 
-          if (emailOK) {
-            // L'email (azione principale) è andata a buon fine.
-            handleSuccess();
-            if (!sheetOK) {
-              console.warn("Attenzione: il backup dei dati sul foglio Google potrebbe non essere andato a buon fine.");
-            }
-          } else {
-            // Se l'invio dell'email fallisce, è un errore critico.
-            // Cerchiamo di capire il motivo dell'errore dalla risposta di FormSubmit
-            let errorMessage = 'Errore sconosciuto durante l\'invio.';
-            if (emailResult.status === 'fulfilled' && !emailResult.value.ok) {
-                // Se il server ha risposto con un errore (es. 400 o 500), proviamo a leggere il messaggio
-                try {
-                    const data = await emailResult.value.json();
-                    errorMessage = data.message || JSON.stringify(data);
-                } catch (e) {
-                    errorMessage = emailResult.value.statusText;
-                }
-            } else if (emailResult.status === 'rejected') {
-                errorMessage = emailResult.reason;
-            }
-            
-            console.error('Errore FormSubmit:', errorMessage);
-            alert(`Errore invio email: ${errorMessage}. Controlla di aver attivato l'indirizzo email su FormSubmit.`);
-            
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-          }
-        }).catch(handleError);
+      } catch (err) {
+        handleError(err);
+      }
     });
   }
 
@@ -452,18 +434,31 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const startDay = (firstDay === 0) ? 6 : firstDay - 1; // Adjust for Monday start
-
-      for (let i = 0; i < startDay; i++) calendarGrid.appendChild(document.createElement('div'));
+      
+      let hasStarted = false;
 
       for (let i = 1; i <= daysInMonth; i++) {
+        const checkDate = new Date(year, month, i);
+        const dayOfWeek = checkDate.getDay(); // 0=Dom, 6=Sab
+
+        // SALTA I WEEKEND (Non li renderizza proprio)
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+        // Aggiungi padding solo per la prima riga del mese (Lun-Ven)
+        if (!hasStarted) {
+          const padding = dayOfWeek - 1; // Lun=1 -> 0 padding, Mar=2 -> 1 padding...
+          for(let p=0; p<padding; p++) {
+            calendarGrid.appendChild(document.createElement('div'));
+          }
+          hasStarted = true;
+        }
+
         const dayEl = document.createElement('div');
         dayEl.textContent = i;
         dayEl.className = 'calendar-day';
-        const checkDate = new Date(year, month, i);
         const today = new Date(); today.setHours(0,0,0,0);
 
-        if (checkDate < today || checkDate.getDay() === 0 || checkDate.getDay() === 6) { // Disabilita passato e weekend
+        if (checkDate < today) { // Disabilita solo passato (weekend già esclusi)
            dayEl.classList.add('disabled');
         } else {
            dayEl.addEventListener('click', () => selectDate(i, month, year, dayEl));
@@ -476,7 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funzione per recuperare gli orari occupati (da collegare al Google Script in futuro)
     async function getBookedSlots(date) {
       // Formatta la data come dd/mm/yyyy per il confronto con il foglio Google
-      const dateString = date.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const dateString = `${day}/${month}/${year}`;
       try {
         const response = await fetch(`${googleScriptURL}?date=${encodeURIComponent(dateString)}`);
         const data = await response.json();
@@ -514,21 +512,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cerca se questo orario è prenotato
         const slot = bookedSlots.find(s => s.time === time);
         
-        if (slot) {
+        if (slot && slot.status === 'confirmed') {
           btn.disabled = true;
           btn.style.cursor = 'not-allowed';
-          
-          if (slot.status === 'confirmed') {
-            // CONFERMATO: Grigio e barrato
-            btn.style.opacity = '0.4';
-            btn.style.textDecoration = 'line-through';
-            btn.title = "Orario non disponibile";
-          } else {
-            // IN ATTESA: Giallo
+          btn.style.opacity = '0.4';
+          btn.style.textDecoration = 'line-through';
+          btn.title = "Orario non disponibile";
+        } else {
+          if (slot) {
             btn.classList.add('pending');
             btn.title = "In attesa di conferma - Potrebbe essere già occupato";
           }
-        } else {
           btn.addEventListener('click', () => {
             document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
