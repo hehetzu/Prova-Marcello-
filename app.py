@@ -55,7 +55,7 @@ def webhook():
         new_status = "Confermato" if action == "confirm" else "Rifiutato"
         emoji = "✅" if action == "confirm" else "❌"
         
-        # 0. Rispondi subito a Telegram per fermare il caricamento del bottone
+        # 0. Rispondi subito a Telegram (ferma la rotellina di caricamento)
         try:
             requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
                 "callback_query_id": callback["id"]
@@ -75,29 +75,23 @@ def webhook():
         except Exception as e:
             print(f"Errore aggiornamento Sheet: {e}")
 
-        # 2. Modifica il messaggio Telegram togliendo i bottoni
+        # 2. Modifica il messaggio Telegram (Rimuove bottoni e aggiorna testo)
         edit_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
         original_text = callback["message"]["text"]
         
-        # Escapiamo il testo originale per evitare errori di Markdown quando lo rispediamo
-        safe_text = escape_markdown(original_text)
-        new_text = f"{safe_text}\n\n{emoji} *{new_status.upper()}*"
+        # Usiamo testo semplice (senza Markdown) per evitare errori e garantire l'invio
+        new_text = f"{original_text}\n\n{emoji} {new_status.upper()}"
         
         response = requests.post(edit_url, json={
             "chat_id": chat_id,
             "message_id": message_id,
             "text": new_text,
-            "parse_mode": "Markdown"
+            # IMPORTANTE: Passare una tastiera vuota rimuove i bottoni precedenti
+            "reply_markup": {"inline_keyboard": []}
         })
 
         if response.status_code != 200:
             print(f"❌ Errore modifica messaggio Telegram: {response.text}")
-            # Fallback: prova a mandare senza markdown se fallisce (es. caratteri strani)
-            requests.post(edit_url, json={
-                "chat_id": chat_id,
-                "message_id": message_id,
-                "text": original_text + f"\n\n{emoji} {new_status.upper()}"
-            })
             
         return {"status": "ok"}, 200
 
