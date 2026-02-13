@@ -55,6 +55,14 @@ def webhook():
         new_status = "Confermato" if action == "confirm" else "Rifiutato"
         emoji = "✅" if action == "confirm" else "❌"
         
+        # 0. Rispondi subito a Telegram per fermare il caricamento del bottone
+        try:
+            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
+                "callback_query_id": callback["id"]
+            })
+        except Exception as e:
+            print(f"Errore answerCallbackQuery: {e}")
+
         # 1. Aggiorna Google Sheet
         try:
             requests.post(GOOGLE_SCRIPT_URL, json={
@@ -75,12 +83,22 @@ def webhook():
         safe_text = escape_markdown(original_text)
         new_text = f"{safe_text}\n\n{emoji} *{new_status.upper()}*"
         
-        requests.post(edit_url, json={
+        response = requests.post(edit_url, json={
             "chat_id": chat_id,
             "message_id": message_id,
             "text": new_text,
             "parse_mode": "Markdown"
         })
+
+        if response.status_code != 200:
+            print(f"❌ Errore modifica messaggio Telegram: {response.text}")
+            # Fallback: prova a mandare senza markdown se fallisce (es. caratteri strani)
+            requests.post(edit_url, json={
+                "chat_id": chat_id,
+                "message_id": message_id,
+                "text": original_text + f"\n\n{emoji} {new_status.upper()}"
+            })
+            
         return {"status": "ok"}, 200
 
     # --- GESTIONE MESSAGGIO NORMALE (Dal sito) ---
