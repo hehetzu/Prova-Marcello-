@@ -32,23 +32,7 @@ def index():
 @app.route("/set_webhook", methods=["GET"])
 def set_webhook():
     """Imposta il webhook di Telegram per abilitare i bottoni"""
-    base_url = request.host_url
-    # Fix per https su Render (spesso request.host_url è http dietro proxy)
-    if "onrender.com" in base_url:
-        base_url = base_url.replace("http://", "https://")
-    
-    webhook_url = f"{base_url}webhook"
-    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url={webhook_url}"
-    
-    try:
-        resp = requests.get(telegram_url)
-        return jsonify(resp.json())
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/set_webhook", methods=["GET"])
-def set_webhook():
-    """Imposta il webhook di Telegram per abilitare i bottoni"""
+    print("🔄 Richiesta configurazione Webhook ricevuta...")
     base_url = request.host_url
     # Fix per https su Render (spesso request.host_url è http dietro proxy)
     if "onrender.com" in base_url:
