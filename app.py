@@ -63,7 +63,8 @@ def webhook():
 
         # 1. Aggiorna Google Sheet
         try:
-            requests.post(GOOGLE_SCRIPT_URL, json={
+            # Usiamo data= invece di json= per inviare come form-data (più compatibile con Google Apps Script)
+            requests.post(GOOGLE_SCRIPT_URL, data={
                 "action": "update_status",
                 "date": date_app,
                 "time": time_app,
