@@ -87,8 +87,15 @@ def webhook():
                 "status": new_status
             }, timeout=10)
             if resp.status_code == 200:
-                sheet_success = True
-                print(f"✅ Aggiornamento Google Sheet: {resp.status_code} - {resp.text[:200]}")
+                try:
+                    json_resp = resp.json()
+                    if json_resp.get("result") == "success":
+                        sheet_success = True
+                        print(f"✅ Google Sheet aggiornato: {json_resp}")
+                    else:
+                        print(f"⚠️ Google Sheet errore logico: {json_resp}")
+                except:
+                    print(f"⚠️ Risposta non JSON da Google (possibile errore Auth/HTML): {resp.text[:100]}")
             else:
                 print(f"❌ Errore Google Sheet status: {resp.status_code}")
         except Exception as e:
