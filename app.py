@@ -86,17 +86,22 @@ def webhook():
         # Usiamo testo semplice (senza Markdown) per evitare errori e garantire l'invio
         new_text = f"{original_text}\n\n{emoji} {new_status.upper()}"
         
-        # Usiamo data (form-data) invece di json per maggiore compatibilità e coerenza con sendMessage
+        # Usiamo JSON per gestire meglio emoji e caratteri speciali
         edit_payload = {
             "chat_id": chat_id,
             "message_id": message_id,
             "text": new_text,
-            "reply_markup": json.dumps({"inline_keyboard": []}) # Deve essere stringa JSON per form-data
+            "reply_markup": {"inline_keyboard": []} # Con json, passiamo il dizionario direttamente
         }
-        response = requests.post(edit_url, data=edit_payload, timeout=10)
+        response = requests.post(edit_url, json=edit_payload, timeout=10)
 
         if response.status_code != 200:
             print(f"❌ Errore modifica messaggio Telegram: {response.text}")
+            # Fallback: Se la modifica fallisce, inviamo un nuovo messaggio di conferma
+            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={
+                "chat_id": chat_id,
+                "text": f"{emoji} Appuntamento {new_status.upper()}"
+            })
             
         return {"status": "ok"}, 200
 
