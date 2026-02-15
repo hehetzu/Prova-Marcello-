@@ -29,6 +29,40 @@ def index():
     """Health check per Render/Heroku"""
     return "Bot Telegram attivo 🤖 (v2.1 - Test Finale)", 200
 
+@app.route("/set_webhook", methods=["GET"])
+def set_webhook():
+    """Imposta il webhook di Telegram per abilitare i bottoni"""
+    base_url = request.host_url
+    # Fix per https su Render (spesso request.host_url è http dietro proxy)
+    if "onrender.com" in base_url:
+        base_url = base_url.replace("http://", "https://")
+    
+    webhook_url = f"{base_url}webhook"
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url={webhook_url}"
+    
+    try:
+        resp = requests.get(telegram_url)
+        return jsonify(resp.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/set_webhook", methods=["GET"])
+def set_webhook():
+    """Imposta il webhook di Telegram per abilitare i bottoni"""
+    base_url = request.host_url
+    # Fix per https su Render (spesso request.host_url è http dietro proxy)
+    if "onrender.com" in base_url:
+        base_url = base_url.replace("http://", "https://")
+    
+    webhook_url = f"{base_url}webhook"
+    telegram_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url={webhook_url}"
+    
+    try:
+        resp = requests.get(telegram_url)
+        return jsonify(resp.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/webhook", methods=["POST", "OPTIONS"])
 def webhook():
     # Gestione esplicita preflight CORS (necessaria per evitare errori 405/500 su alcuni server)
