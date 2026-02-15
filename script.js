@@ -235,18 +235,39 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify(telegramPayload)
         }).catch(err => console.warn("Errore Telegram:", err));
 
-        const emailPromise = fetch(contactForm.action, {
-          method: "POST",
-          body: formData,
-          headers: { 'Accept': 'application/json' }
-        });
+        // LOGICA IBRIDA: Brevo (Principale) -> FormSubmit (Backup)
+        const emailLogicPromise = (async () => {
+          try {
+            // 1. Tenta invio tramite Brevo (dal tuo Backend Python)
+            const brevoResp = await fetch('https://marcello-bot.onrender.com/send_email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(telegramPayload)
+            });
+            
+            if (brevoResp.ok) {
+              console.log("✅ Email inviata con successo via Brevo");
+              return { ok: true }; // Simula una risposta positiva
+            } else {
+              throw new Error("Brevo ha restituito errore: " + brevoResp.status);
+            }
+          } catch (err) {
+            console.warn("⚠️ Brevo fallito (" + err.message + "), passo al backup FormSubmit...");
+            // 2. Fallback: Usa FormSubmit se Brevo fallisce
+            return fetch(contactForm.action, {
+              method: "POST",
+              body: formData,
+              headers: { 'Accept': 'application/json' }
+            });
+          }
+        })();
 
-        const [emailResult] = await Promise.all([emailPromise, telegramPromise]);
+        const [emailResult] = await Promise.all([emailLogicPromise, telegramPromise]);
 
         if (emailResult.ok) {
           handleSuccess();
         } else {
-          throw new Error("Errore invio email FormSubmit");
+          throw new Error("Errore invio email (sia Brevo che Backup falliti)");
         }
 
       } catch (err) {
