@@ -22,11 +22,11 @@ if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
     print("❌ ERRORE CRITICO: Token o Chat ID non trovati!")
     print("   Assicurati di aver creato il file .env nella stessa cartella di app.py")
 
-def escape_markdown(text):
-    """Esegue l'escape dei caratteri speciali per il Markdown di Telegram."""
+def escape_html(text):
+    """Esegue l'escape dei caratteri speciali per HTML di Telegram."""
     if not text:
         return ""
-    return text.replace('_', '\\_').replace('*', '\\*').replace('`', '\\`').replace('[', '\\[')
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 @app.route("/", methods=["GET"])
 def index():
@@ -111,11 +111,11 @@ def webhook():
         return {"status": "ignored"}, 200
 
     print("📩 Richiesta ricevuta dal sito/test...")
-    nome = escape_markdown(data.get("nome", "Non specificato"))
-    email = escape_markdown(data.get("email", "Non specificata"))
-    telefono = escape_markdown(data.get("telefono", ""))
-    messaggio = escape_markdown(data.get("messaggio", ""))
-    data_app = escape_markdown(data.get("data", ""))
+    nome = escape_html(data.get("nome", "Non specificato"))
+    email = escape_html(data.get("email", "Non specificata"))
+    telefono = escape_html(data.get("telefono", ""))
+    messaggio = escape_html(data.get("messaggio", ""))
+    data_app = escape_html(data.get("data", ""))
 
     # Estrai data e ora separatamente se possibile (assumendo formato "dd/mm/yyyy hh:mm")
     date_only = ""
@@ -126,16 +126,16 @@ def webhook():
         time_only = parts[1]
 
     # Determina il titolo in base alla presenza della data
-    titolo = "📅 *Nuovo Appuntamento*" if data_app else "📄 *Richiesta Preventivo/Info*"
+    titolo = "📅 <b>Nuovo Appuntamento</b>" if data_app else "📄 <b>Richiesta Preventivo/Info</b>"
 
     text = f"{titolo}\n\n"
-    text += f"*Nome:* {nome}\n"
-    text += f"*Email:* {email}\n"
+    text += f"<b>Nome:</b> {nome}\n"
+    text += f"<b>Email:</b> {email}\n"
     if telefono:
-        text += f"*Telefono:* {telefono}\n"
+        text += f"<b>Telefono:</b> {telefono}\n"
     if data_app:
-        text += f"*Data richiesta:* {data_app}\n"
-    text += f"\n*Messaggio:*\n{messaggio}\n"
+        text += f"<b>Data richiesta:</b> {data_app}\n"
+    text += f"\n<b>Messaggio:</b>\n{messaggio}\n"
 
     # Preparazione Link WhatsApp e Email con testi preimpostati
     clean_phone = telefono.replace(" ", "").replace("-", "") if telefono else ""
@@ -167,7 +167,7 @@ def webhook():
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": text,
-        "parse_mode": "Markdown"
+        "parse_mode": "HTML"
     }
     
     if keyboard:
