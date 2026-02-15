@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 import os
@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app) # Abilita CORS per permettere al sito di inviare dati al bot
+# Configurazione CORS esplicita per accettare richieste da qualsiasi origine
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Inserisci qui il tuo token e chat_id Telegram
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
@@ -27,68 +28,96 @@ def index():
     """Health check per Render/Heroku"""
     return "Bot Telegram attivo 🤖 (v2.1 - Test Finale)", 200
 
-@app.route("/webhook", methods=["POST"])
+@app.route("/webhook", methods=["POST", "OPTIONS"])
 def webhook():
+    # Gestione esplicita preflight CORS (necessaria per evitare errori 405/500 su alcuni server)
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+
     data = request.json
     if not data:
         return {"status": "ignored", "message": "No JSON data"}, 200
 
     # --- GESTIONE CALLBACK (Click sui bottoni) ---
     if "callback_query" in data:
+        print(f"🔴 CALLBACK_QUERY RICEVUTA! Dati completi: {data}")
         callback = data["callback_query"]
+        
+        # Verifica che il token sia configurato
+        if not TELEGRAM_TOKEN:
+            print("❌ ERRORE CRITICO: TELEGRAM_TOKEN non è impostato!")
+            return {"status": "error", "message": "Token missing"}, 200
         
         # 0. Rispondi SUBITO a Telegram (ferma la rotellina di caricamento)
         # Lo facciamo come prima cosa assoluta per evitare timeout visivi
         try:
-            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
+            resp = requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
                 "callback_query_id": callback["id"],
                 "text": "🔄 Elaborazione in corso..."
             }, timeout=5)
+            print(f"✅ answerCallbackQuery risposta: {resp.status_code} - {resp.text}")
         except Exception as e:
-            print(f"Errore nella answerCallbackQuery: {e}")
+            print(f"❌ Errore nella answerCallbackQuery: {e}")
 
         chat_id = callback["message"]["chat"]["id"]
         message_id = callback["message"]["message_id"]
         data_str = callback["data"] # Es: "confirm|12/02/2024|14:00"
-        print(f"🔹 Callback ricevuta: {data_str}")
+        print(f"🔹 Callback ricevuta: {data_str} | chat_id: {chat_id} | message_id: {message_id}")
 
         try:
             action, date_app, time_app = data_str.split("|")
         except ValueError:
             print(f"❌ Errore formato callback data: {data_str}")
+            try:
+                requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={"chat_id": chat_id, "text": "⚠️ Errore: Dati del pulsante non validi."})
+            except: pass
             return {"status": "error", "message": "Invalid callback data"}, 200
         
         new_status = "Confermato" if action == "confirm" else "Rifiutato"
         emoji = "✅" if action == "confirm" else "❌"
 
         # 1. Aggiorna Google Sheet
+        sheet_success = False
         try:
             # Usiamo data= invece di json= per inviare come form-data (più compatibile con Google Apps Script)
-            requests.post(GOOGLE_SCRIPT_URL, data={
+            resp = requests.post(GOOGLE_SCRIPT_URL, data={
                 "action": "update_status",
                 "date": date_app,
                 "time": time_app,
                 "status": new_status
             }, timeout=10)
-            print(f"✅ Aggiornamento Google Sheet (con timeout): {date_app} {time_app} -> {new_status}")
+            if resp.status_code == 200:
+                sheet_success = True
+                print(f"✅ Aggiornamento Google Sheet: {resp.status_code} - {resp.text[:200]}")
+            else:
+                print(f"❌ Errore Google Sheet status: {resp.status_code}")
         except Exception as e:
-            print(f"Errore aggiornamento Sheet: {e}")
+            print(f"❌ Errore aggiornamento Sheet: {e}")
 
         # 2. Rimuovi solo i bottoni dal messaggio originale (lascia il testo invariato)
         try:
-            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageReplyMarkup", json={
+            resp = requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageReplyMarkup", json={
                 "chat_id": chat_id,
                 "message_id": message_id,
                 "reply_markup": {"inline_keyboard": []}
             }, timeout=10)
+            print(f"✅ Rimozione bottoni: {resp.status_code} - {resp.text[:200]}")
         except Exception as e:
-            print(f"Errore rimozione bottoni: {e}")
+            print(f"❌ Errore rimozione bottoni: {e}")
 
         # 3. Invia un NUOVO messaggio di conferma
-        requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={
-            "chat_id": chat_id,
-            "text": f"{emoji} Appuntamento {new_status.upper()}"
-        })
+        msg_text = f"{emoji} Appuntamento {new_status.upper()}"
+        if not sheet_success:
+            msg_text += "\n⚠️ ATTENZIONE: Errore aggiornamento Google Sheet! Controllare manualmente."
+
+        try:
+            resp = requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={
+                "chat_id": chat_id,
+                "text": msg_text
+            }, timeout=10)
+            print(f"✅ Messaggio conferma inviato: {resp.status_code}")
+        except Exception as e:
+            print(f"❌ Errore invio messaggio conferma: {e}")
 
         return {"status": "ok"}, 200
 
@@ -107,10 +136,11 @@ def webhook():
     # Estrai data e ora separatamente se possibile (assumendo formato "dd/mm/yyyy hh:mm")
     date_only = ""
     time_only = ""
-    if data_app and " " in data_app:
-        parts = data_app.split(" ")
-        date_only = parts[0]
-        time_only = parts[1]
+    if data_app:
+        parts = data_app.strip().split()
+        if len(parts) >= 2:
+            date_only = parts[0]
+            time_only = parts[1]
 
     # Determina il titolo in base alla presenza della data
     titolo = "📅 Nuovo Appuntamento" if data_app else "📄 Richiesta Preventivo/Info"
@@ -157,10 +187,10 @@ def webhook():
     }
     
     if keyboard:
-        payload["reply_markup"] = json.dumps({"inline_keyboard": keyboard})
+        payload["reply_markup"] = {"inline_keyboard": keyboard}
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    response = requests.post(url, data=payload, timeout=10)
+    response = requests.post(url, json=payload, timeout=10)
     
     if response.status_code != 200:
         print(f"❌ Errore Telegram: {response.text}")
