@@ -13,8 +13,9 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Inserisci qui il tuo token e chat_id Telegram
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+# .strip() rimuove eventuali spazi vuoti accidentali copiati su Render
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
 # URL del Google Script (Lo stesso usato nel frontend, mettilo qui o nel .env)
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoeUyQyflLQEajTgYLfK47mzyBZuaemDWWKVpfhwPZTvS9iZ0ekt0KDtusjLkHYNm1/exec"
@@ -53,7 +54,7 @@ def webhook():
         try:
             resp = requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
                 "callback_query_id": callback["id"],
-                "text": "🔄 Elaborazione in corso..."
+                "text": "🔄 Elaborazione..."
             }, timeout=5)
             print(f"✅ answerCallbackQuery risposta: {resp.status_code} - {resp.text}")
         except Exception as e:
@@ -86,6 +87,7 @@ def webhook():
                 "time": time_app,
                 "status": new_status
             }, timeout=10)
+            
             if resp.status_code == 200:
                 try:
                     json_resp = resp.json()
@@ -93,7 +95,7 @@ def webhook():
                         sheet_success = True
                         print(f"✅ Google Sheet aggiornato: {json_resp}")
                     else:
-                        print(f"⚠️ Google Sheet errore logico: {json_resp}")
+                        print(f"⚠️ Google Sheet errore logico: {json_resp.get('message')}")
                 except:
                     print(f"⚠️ Risposta non JSON da Google (possibile errore Auth/HTML): {resp.text[:100]}")
             else:
