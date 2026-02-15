@@ -148,6 +148,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // URL del tuo Google Apps Script (Assicurati di aggiornarlo se fai una Nuova Distribuzione)
   const googleScriptURL = "https://script.google.com/macros/s/AKfycbwoeUyQyflLQEajTgYLfK47mzyBZuaemDWWKVpfhwPZTvS9iZ0ekt0KDtusjLkHYNm1/exec";
 
+  // --- TRACKING VISITE (Counter Segreto) ---
+  // Invia un segnale a Google Sheet una volta per sessione
+  if (!sessionStorage.getItem('visit_logged')) {
+    const trackParams = new URLSearchParams();
+    trackParams.append('action', 'track_visit');
+    trackParams.append('device', navigator.userAgent); // Info sul dispositivo (Mobile/PC)
+
+    fetch(googleScriptURL, { method: 'POST', body: trackParams }).catch(err => {});
+    sessionStorage.setItem('visit_logged', 'true');
+  }
+
   const contactForm = document.getElementById('contact-form');
   if(contactForm) {
     contactForm.addEventListener('submit', async function(e) {
