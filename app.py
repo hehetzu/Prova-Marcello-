@@ -31,7 +31,7 @@ def escape_markdown(text):
 @app.route("/", methods=["GET"])
 def index():
     """Health check per Render/Heroku"""
-    return "Bot Telegram attivo 🤖 (v2.0 - Timeout Fix)", 200
+    return "Bot Telegram attivo 🤖 (v2.1 - Test Finale)", 200
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
