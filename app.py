@@ -22,12 +22,6 @@ if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
     print("❌ ERRORE CRITICO: Token o Chat ID non trovati!")
     print("   Assicurati di aver creato il file .env nella stessa cartella di app.py")
 
-def escape_html(text):
-    """Esegue l'escape dei caratteri speciali per HTML di Telegram."""
-    if not text:
-        return ""
-    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-
 @app.route("/", methods=["GET"])
 def index():
     """Health check per Render/Heroku"""
@@ -79,30 +73,22 @@ def webhook():
         except Exception as e:
             print(f"Errore aggiornamento Sheet: {e}")
 
-        # 2. Modifica il messaggio Telegram (Rimuove bottoni e aggiorna testo)
-        edit_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageText"
-        original_text = callback["message"]["text"]
-        
-        # Usiamo testo semplice (senza Markdown) per evitare errori e garantire l'invio
-        new_text = f"{original_text}\n\n{emoji} {new_status.upper()}"
-        
-        # Usiamo JSON per gestire meglio emoji e caratteri speciali
-        edit_payload = {
-            "chat_id": chat_id,
-            "message_id": message_id,
-            "text": new_text,
-            "reply_markup": {"inline_keyboard": []} # Con json, passiamo il dizionario direttamente
-        }
-        response = requests.post(edit_url, json=edit_payload, timeout=10)
-
-        if response.status_code != 200:
-            print(f"❌ Errore modifica messaggio Telegram: {response.text}")
-            # Fallback: Se la modifica fallisce, inviamo un nuovo messaggio di conferma
-            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={
+        # 2. Rimuovi solo i bottoni dal messaggio originale (lascia il testo invariato)
+        try:
+            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/editMessageReplyMarkup", json={
                 "chat_id": chat_id,
-                "text": f"{emoji} Appuntamento {new_status.upper()}"
-            })
-            
+                "message_id": message_id,
+                "reply_markup": {"inline_keyboard": []}
+            }, timeout=10)
+        except Exception as e:
+            print(f"Errore rimozione bottoni: {e}")
+
+        # 3. Invia un NUOVO messaggio di conferma
+        requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={
+            "chat_id": chat_id,
+            "text": f"{emoji} Appuntamento {new_status.upper()}"
+        })
+
         return {"status": "ok"}, 200
 
     # --- GESTIONE MESSAGGIO NORMALE (Dal sito) ---
@@ -111,11 +97,11 @@ def webhook():
         return {"status": "ignored"}, 200
 
     print("📩 Richiesta ricevuta dal sito/test...")
-    nome = escape_html(data.get("nome", "Non specificato"))
-    email = escape_html(data.get("email", "Non specificata"))
-    telefono = escape_html(data.get("telefono", ""))
-    messaggio = escape_html(data.get("messaggio", ""))
-    data_app = escape_html(data.get("data", ""))
+    nome = data.get("nome", "Non specificato")
+    email = data.get("email", "Non specificata")
+    telefono = data.get("telefono", "")
+    messaggio = data.get("messaggio", "")
+    data_app = data.get("data", "")
 
     # Estrai data e ora separatamente se possibile (assumendo formato "dd/mm/yyyy hh:mm")
     date_only = ""
@@ -126,16 +112,16 @@ def webhook():
         time_only = parts[1]
 
     # Determina il titolo in base alla presenza della data
-    titolo = "📅 <b>Nuovo Appuntamento</b>" if data_app else "📄 <b>Richiesta Preventivo/Info</b>"
+    titolo = "📅 Nuovo Appuntamento" if data_app else "📄 Richiesta Preventivo/Info"
 
     text = f"{titolo}\n\n"
-    text += f"<b>Nome:</b> {nome}\n"
-    text += f"<b>Email:</b> {email}\n"
+    text += f"Nome: {nome}\n"
+    text += f"Email: {email}\n"
     if telefono:
-        text += f"<b>Telefono:</b> {telefono}\n"
+        text += f"Telefono: {telefono}\n"
     if data_app:
-        text += f"<b>Data richiesta:</b> {data_app}\n"
-    text += f"\n<b>Messaggio:</b>\n{messaggio}\n"
+        text += f"Data richiesta: {data_app}\n"
+    text += f"\nMessaggio:\n{messaggio}\n"
 
     # Preparazione Link WhatsApp e Email con testi preimpostati
     clean_phone = telefono.replace(" ", "").replace("-", "") if telefono else ""
@@ -147,7 +133,7 @@ def webhook():
     mail_url = f"mailto:{email}?subject={urllib.parse.quote(mail_subject)}&body={urllib.parse.quote(mail_body)}"
     
     # Aggiungiamo il link email nel testo (i bottoni Telegram non supportano "mailto:")
-    text += f"\n[📧 Clicca qui per rispondere via Email]({mail_url})"
+    text += f"\n📧 Rispondi via Email: {email}"
 
     # Creazione Bottoni (Inline Keyboard)
     keyboard = []
@@ -166,8 +152,7 @@ def webhook():
 
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
-        "text": text,
-        "parse_mode": "HTML"
+        "text": text
     }
     
     if keyboard:
