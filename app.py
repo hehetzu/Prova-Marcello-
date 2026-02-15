@@ -42,26 +42,29 @@ def webhook():
     # --- GESTIONE CALLBACK (Click sui bottoni) ---
     if "callback_query" in data:
         callback = data["callback_query"]
+        
+        # 0. Rispondi SUBITO a Telegram (ferma la rotellina di caricamento)
+        # Lo facciamo come prima cosa assoluta per evitare timeout visivi
+        try:
+            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
+                "callback_query_id": callback["id"]
+            }, timeout=5)
+        except Exception as e:
+            print(f"Errore nella answerCallbackQuery: {e}")
+
         chat_id = callback["message"]["chat"]["id"]
         message_id = callback["message"]["message_id"]
         data_str = callback["data"] # Es: "confirm|12/02/2024|14:00"
+        print(f"🔹 Callback ricevuta: {data_str}")
 
         try:
             action, date_app, time_app = data_str.split("|")
         except ValueError:
             print(f"❌ Errore formato callback data: {data_str}")
-            return {"status": "error", "message": "Invalid callback data"}, 400
+            return {"status": "error", "message": "Invalid callback data"}, 200
         
         new_status = "Confermato" if action == "confirm" else "Rifiutato"
         emoji = "✅" if action == "confirm" else "❌"
-        
-        # 0. Rispondi subito a Telegram (ferma la rotellina di caricamento)
-        try:
-            requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
-                "callback_query_id": callback["id"]
-            })
-        except Exception as e:
-            print(f"Errore nella answerCallbackQuery: {e}")
 
         # 1. Aggiorna Google Sheet
         try:
@@ -88,7 +91,7 @@ def webhook():
             "text": new_text,
             # IMPORTANTE: Passare una tastiera vuota rimuove i bottoni precedenti
             "reply_markup": {"inline_keyboard": []}
-        })
+        }, timeout=10)
 
         if response.status_code != 200:
             print(f"❌ Errore modifica messaggio Telegram: {response.text}")
@@ -163,7 +166,7 @@ def webhook():
         payload["reply_markup"] = json.dumps({"inline_keyboard": keyboard})
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    response = requests.post(url, data=payload)
+    response = requests.post(url, data=payload, timeout=10)
     
     if response.status_code != 200:
         print(f"❌ Errore Telegram: {response.text}")
