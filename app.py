@@ -151,6 +151,7 @@ def webhook():
     
     # Se è un appuntamento, aggiungi bottoni Accetta/Rifiuta
     if data_app and date_only and time_only:
+        print(f"🔘 Aggiungo bottoni per: {date_only} - {time_only}")
         callback_data_confirm = f"confirm|{date_only}|{time_only}"
         callback_data_reject = f"reject|{date_only}|{time_only}"
         keyboard.append([
