@@ -47,7 +47,8 @@ def webhook():
         # Lo facciamo come prima cosa assoluta per evitare timeout visivi
         try:
             requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery", json={
-                "callback_query_id": callback["id"]
+                "callback_query_id": callback["id"],
+                "text": "🔄 Elaborazione in corso..."
             }, timeout=5)
         except Exception as e:
             print(f"Errore nella answerCallbackQuery: {e}")
@@ -85,13 +86,14 @@ def webhook():
         # Usiamo testo semplice (senza Markdown) per evitare errori e garantire l'invio
         new_text = f"{original_text}\n\n{emoji} {new_status.upper()}"
         
-        response = requests.post(edit_url, json={
+        # Usiamo data (form-data) invece di json per maggiore compatibilità e coerenza con sendMessage
+        edit_payload = {
             "chat_id": chat_id,
             "message_id": message_id,
             "text": new_text,
-            # IMPORTANTE: Passare una tastiera vuota rimuove i bottoni precedenti
-            "reply_markup": {"inline_keyboard": []}
-        }, timeout=10)
+            "reply_markup": json.dumps({"inline_keyboard": []}) # Deve essere stringa JSON per form-data
+        }
+        response = requests.post(edit_url, data=edit_payload, timeout=10)
 
         if response.status_code != 200:
             print(f"❌ Errore modifica messaggio Telegram: {response.text}")
