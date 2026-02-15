@@ -31,7 +31,7 @@ def escape_markdown(text):
 @app.route("/", methods=["GET"])
 def index():
     """Health check per Render/Heroku"""
-    return "Bot Telegram attivo 🤖", 200
+    return "Bot Telegram attivo 🤖 (v2.0 - Timeout Fix)", 200
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -61,7 +61,7 @@ def webhook():
                 "callback_query_id": callback["id"]
             })
         except Exception as e:
-            print(f"Errore answerCallbackQuery: {e}")
+            print(f"Errore nella answerCallbackQuery: {e}")
 
         # 1. Aggiorna Google Sheet
         try:
@@ -70,8 +70,8 @@ def webhook():
                 "date": date_app,
                 "time": time_app,
                 "status": new_status
-            })
-            print(f"Aggiornamento Google Sheet: {date_app} {time_app} -> {new_status}")
+            }, timeout=10)
+            print(f"✅ Aggiornamento Google Sheet (con timeout): {date_app} {time_app} -> {new_status}")
         except Exception as e:
             print(f"Errore aggiornamento Sheet: {e}")
 
