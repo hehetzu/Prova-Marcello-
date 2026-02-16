@@ -299,6 +299,49 @@ def send_appointment_confirmation(client_name, client_email, app_date, app_time)
         print(f"❌ Eccezione invio email conferma appuntamento: {e}")
         return False
 
+@app.route("/confirm_from_email", methods=["GET"])
+def confirm_from_email():
+    """Endpoint per confermare l'appuntamento direttamente dall'email admin"""
+    date_app = request.args.get("date")
+    time_app = request.args.get("time")
+    client_email = request.args.get("email")
+    client_name = request.args.get("name", "Cliente")
+
+    if not date_app or not time_app:
+        return "<h1>Errore</h1><p>Parametri mancanti nel link.</p>", 400
+
+    # 1. Aggiorna Google Sheet
+    try:
+        resp = requests.post(GOOGLE_SCRIPT_URL, data={
+            "action": "update_status",
+            "date": date_app,
+            "time": time_app,
+            "status": "Confermato"
+        }, timeout=10)
+    except Exception as e:
+        return f"<h1>Errore</h1><p>Impossibile aggiornare il calendario: {str(e)}</p>", 500
+
+    # 2. Invia email di conferma al cliente
+    email_sent = False
+    if client_email:
+        email_sent = send_appointment_confirmation(client_name, client_email, date_app, time_app)
+
+    # 3. Pagina di successo
+    return f"""
+    <!DOCTYPE html>
+    <html lang="it">
+    <head><meta charset="UTF-8"><title>Confermato</title></head>
+    <body style="font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4;">
+        <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto;">
+            <h1 style="color: #28a745;">✅ Appuntamento Confermato</h1>
+            <p>L'appuntamento per <strong>{client_name}</strong> è stato confermato.</p>
+            <p><strong>Data:</strong> {date_app}<br><strong>Ora:</strong> {time_app}</p>
+            <p style="color: #666; font-size: 0.9em;">{'📧 Email di conferma inviata al cliente.' if email_sent else '⚠️ Impossibile inviare email al cliente.'}</p>
+        </div>
+    </body>
+    </html>
+    """, 200
+
 @app.route("/send_email", methods=["POST"])
 def send_email():
     """Invia email tramite Brevo API a admin e cliente"""
@@ -312,24 +355,81 @@ def send_email():
     messaggio = data.get("messaggio", "")
     data_app = data.get("data", "")
 
-    # Preparazione righe condizionali per le email (mostra data solo se presente)
-    date_row_admin = f"<p><strong>Data/Ora:</strong> {data_app}</p>" if data_app else ""
+    # Preparazione righe condizionali per le email
     date_row_client = f"<p><strong>📅 Data/Ora preferita:</strong> {data_app}</p>" if data_app else ""
     
+    # Costruzione riga data per la tabella admin (HTML tabella)
+    date_row_admin_html = ""
+    confirm_btn_html = ""
+
+    if data_app:
+        date_row_admin_html = f"""
+        <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #7f8c8d;"><strong>Data/Ora:</strong></td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #e74c3c; font-weight: bold;">{data_app}</td>
+        </tr>
+        """
+        
+        # Generazione Link di Conferma
+        parts = data_app.strip().split()
+        if len(parts) >= 2:
+            date_only = parts[0]
+            time_only = parts[1]
+            base_url = request.host_url
+            if "onrender.com" in base_url:
+                base_url = base_url.replace("http://", "https://")
+            
+            params = {"date": date_only, "time": time_only, "email": email_cliente, "name": nome}
+            confirm_url = f"{base_url}confirm_from_email?{urllib.parse.urlencode(params)}"
+            confirm_btn_html = f'<a href="{confirm_url}" style="background-color: #28a745; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-size: 14px; margin-right: 10px; display: inline-block; font-weight: bold;">✅ Conferma</a>'
+    
     request_type_label = "Appuntamento" if data_app else "Preventivo/Info"
+    
+    # Colore header differenziato: Verde per appuntamenti, Blu scuro per preventivi
+    header_color = "#28a745" if data_app else "#2c3e50"
 
     # --- 1. Prepara e invia email all'amministratore ---
     subject_admin = f"Nuova richiesta ({request_type_label}): {nome}"
     html_content_admin = f"""
-    <html><body>
-        <h2>Nuova richiesta dal sito web</h2>
-        <p><strong>Nome:</strong> {nome}</p>
-        <p><strong>Email:</strong> {email_cliente}</p>
-        <p><strong>Telefono:</strong> {telefono}</p>
-        {date_row_admin}
-        <hr>
-        <p><strong>Messaggio:</strong><br>{messaggio.replace(chr(10), '<br>')}</p>
-    </body></html>
+    <!DOCTYPE html>
+    <html lang="it">
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #e0e0e0;">
+            <div style="background-color: {header_color}; padding: 20px; text-align: center;">
+                <h2 style="color: #ffffff; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">Nuova Richiesta dal Sito</h2>
+            </div>
+            <div style="padding: 30px;">
+                <table width="100%" style="border-collapse: collapse; margin-bottom: 20px;">
+                    <tr>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #7f8c8d; width: 120px;"><strong>Nome:</strong></td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #2c3e50; font-weight: 600;">{nome}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #7f8c8d;"><strong>Email:</strong></td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><a href="mailto:{email_cliente}" style="color: #3498db; text-decoration: none;">{email_cliente}</a></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #7f8c8d;"><strong>Telefono:</strong></td>
+                        <td style="padding: 10px 0; border-bottom: 1px solid #eee;"><a href="tel:{telefono}" style="color: #3498db; text-decoration: none;">{telefono}</a></td>
+                    </tr>
+                    {date_row_admin_html}
+                </table>
+                <div style="background-color: #f9f9f9; border-left: 4px solid #3498db; padding: 15px; border-radius: 4px;">
+                    <p style="margin: 0 0 5px 0; font-size: 12px; color: #95a5a6; text-transform: uppercase; font-weight: bold;">Messaggio del cliente</p>
+                    <p style="margin: 0; color: #333; font-style: italic;">"{messaggio.replace(chr(10), '<br>')}"</p>
+                </div>
+                <div style="margin-top: 30px; text-align: center;">
+                    {confirm_btn_html}
+                    <a href="mailto:{email_cliente}" style="background-color: #2c3e50; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-size: 14px; margin-right: 10px; display: inline-block;">Rispondi</a>
+                </div>
+            </div>
+            <div style="background-color: #ecf0f1; padding: 15px; text-align: center; font-size: 12px; color: #7f8c8d;">
+                Ricevuto tramite il modulo di contatto del sito web.
+            </div>
+        </div>
+    </body>
+    </html>
     """
 
     url = "https://api.brevo.com/v3/smtp/email"
