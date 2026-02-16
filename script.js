@@ -62,9 +62,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = galleryWrapper.querySelector('.carousel-btn.next');
     const items = Array.from(gallery.querySelectorAll('img, video'));
 
+    let isDragging = false;
+
     items.forEach((item, index) => {
       if (item.tagName === 'IMG') {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+          if (isDragging) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
           currentGalleryItems = items;
           showModalImage(index);
           openModal();
@@ -98,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     gallery.addEventListener('mousedown', (e) => {
       isDown = true;
+      isDragging = false;
       gallery.style.cursor = 'grabbing';
       startX = e.pageX - gallery.offsetLeft;
       scrollLeft = gallery.scrollLeft;
@@ -107,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gallery.addEventListener('mousemove', (e) => {
       if (!isDown) return;
       e.preventDefault();
+      isDragging = true;
       const x = e.pageX - gallery.offsetLeft;
       const walk = (x - startX) * 2;
       gallery.scrollLeft = scrollLeft - walk;
@@ -286,6 +295,37 @@ document.addEventListener('DOMContentLoaded', () => {
     contactForm.style.display = 'none';
   }
 
+  // --- LOGICA DINAMICA FORM ---
+  function setupDynamicForm() {
+    const radioInputs = document.querySelectorAll('input[name="request_type_ui"]');
+    const messageBox = document.getElementById('message');
+    const subjectInput = document.querySelector('input[name="_subject"]');
+
+    const placeholders = {
+      'info': 'Scrivi qui la tua richiesta generica...',
+      'preventivo': 'Descrivi il tipo di lavorazione (es. Protesi Deflex, Riparazione) per ricevere una stima...',
+      'appuntamento': 'Indica le tue preferenze di orario o usa il calendario per prenotare...'
+    };
+
+    const subjects = {
+      'info': 'Richiesta Informazioni dal sito',
+      'preventivo': 'Richiesta Preventivo dal sito',
+      'appuntamento': 'Richiesta Appuntamento dal sito'
+    };
+
+    radioInputs.forEach(input => {
+      input.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (messageBox) {
+          messageBox.placeholder = placeholders[val] || placeholders['info'];
+        }
+        if (subjectInput) {
+          subjectInput.value = subjects[val] || subjects['info'];
+        }
+      });
+    });
+  }
+
   if (contactForm && contactInfo) {
     // Aggiungi campo telefono dinamicamente
     if (!contactForm.querySelector('[name="telefono"]') && !contactForm.querySelector('[name="phone"]')) {
@@ -303,6 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+
+    // Inizializza la logica dinamica
+    setupDynamicForm();
 
     // 1. Crea il contenitore Modale
     const modalOverlay = document.createElement('div');
@@ -351,11 +394,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const timeInput = document.getElementById('booking_time');
       const typeInput = document.getElementById('request_type');
       const msgBox = document.getElementById('message');
+      const quoteRadio = document.getElementById('type-quote');
 
       if (subjectInput) subjectInput.value = "Richiesta Preventivo / Informazioni";
       if (dateInput) dateInput.value = ""; // Pulisce la data
       if (timeInput) timeInput.value = ""; // Pulisce l'ora
       if (typeInput) typeInput.value = "preventivo"; // Imposta tipo preventivo
+      
+      // Seleziona visivamente il radio button "Preventivo"
+      if (quoteRadio) {
+        quoteRadio.checked = true;
+        // Scatena l'evento change per aggiornare il placeholder
+        quoteRadio.dispatchEvent(new Event('change'));
+      }
       
       // Rimuovi eventuale testo automatico di appuntamento dal messaggio
       if (msgBox && msgBox.value.includes('Richiesta appuntamento')) {
@@ -584,5 +635,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.openContactPopup) window.openContactPopup();
     });
     renderCalendar(currentDate);
+  }
+
+  // --- Cookie Banner ---
+  const cookieBanner = document.getElementById('cookie-banner');
+  const acceptCookiesBtn = document.getElementById('accept-cookies');
+
+  if (cookieBanner && acceptCookiesBtn) {
+    // Controlla se l'utente ha già accettato
+    if (!localStorage.getItem('cookie_consent')) {
+      // Mostra il banner dopo un breve ritardo
+      setTimeout(() => {
+        cookieBanner.classList.add('is-visible');
+      }, 1000);
+    }
+
+    acceptCookiesBtn.addEventListener('click', () => {
+      localStorage.setItem('cookie_consent', 'true');
+      cookieBanner.classList.remove('is-visible');
+    });
   }
 });

@@ -238,6 +238,48 @@ section h2 {
   font-weight: 500;
 }
 
+/* Stile Dinamico Radio Buttons (Chips) */
+.request-type-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.label-title {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--dark);
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.radio-group input[type="radio"] {
+  display: none; /* Nasconde il pallino standard */
+}
+
+.radio-label {
+  padding: 8px 16px;
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.radio-group input[type="radio"]:checked + .radio-label {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 86, 179, 0.2);
+}
+
 /* Form Inputs */
 input, textarea {
   border: 2px solid #e9ecef;
@@ -245,9 +287,11 @@ input, textarea {
   padding: 10px;
   width: 100%;
   box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 input:focus, textarea:focus {
   border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.1);
   outline: none;
 }
 
@@ -275,6 +319,7 @@ input:focus, textarea:focus {
   object-fit: cover;
   border-radius: var(--radius);
   scroll-snap-align: center;
+  cursor: pointer;
 }
 
 .carousel-btn {
@@ -349,6 +394,8 @@ input:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
+  .container { padding: 1.5rem 1rem; } /* Riduci padding laterale */
+
   header h1 { font-size: 1rem; }
   
   .hamburger-menu { display: flex; }
@@ -373,11 +420,12 @@ input:focus, textarea:focus {
     visibility: visible;
   }
 
-  .hero-text h2 { font-size: 1.6rem; text-align: center; }
+  .hero-text h2 { font-size: 1.4rem; text-align: center; } /* Titoli più piccoli */
   .hero-text p { text-align: center; }
   
   section h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem; /* Titoli sezioni più piccoli */
+    margin-bottom: 1rem;
   }
 
   .hero-text, .hero-img, .about-text, .about-img, .contatti-info, .contact-form, .map-info, .map-container {
@@ -386,10 +434,26 @@ input:focus, textarea:focus {
 
   .gallery img, .gallery video {
     /* Rimpicciolisce le foto nelle gallerie su mobile */
-    width: 240px;
+    width: 200px;
+    height: 140px;
   }
 
-  footer { padding-bottom: 120px; }
+  footer { padding-bottom: 100px; }
+
+  /* Riduci dimensioni card e bottoni */
+  .card { padding: 1.2rem; }
+  .card h3 { font-size: 1.1rem; }
+  .btn { padding: 0.6rem 1.5rem; font-size: 0.9rem; }
+
+  /* Riduci bottoni fissi (WhatsApp e Preventivo) */
+  .whatsapp-button { width: 45px; height: 45px; bottom: 80px; }
+  .whatsapp-button img { width: 100%; height: 100%; }
+  .fixed-quote-btn { bottom: 15px; padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+
+  /* Riduci banner cookie */
+  .cookie-banner { padding: 1rem; }
+  .cookie-content p { font-size: 0.8rem; }
+  .cookie-content .btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
 }
 
 .map-container {
@@ -683,4 +747,53 @@ footer {
   right: 2px;
   height: 1px;
   background: #777;
+}
+
+/* Cookie Banner */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--dark);
+  color: #fff;
+  padding: 1.5rem;
+  z-index: 9999;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
+}
+
+.cookie-banner.is-visible {
+  transform: translateY(0);
+}
+
+.cookie-content {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cookie-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  flex: 1 1 300px;
+  line-height: 1.5;
+}
+
+.cookie-content a {
+  color: var(--secondary);
+  text-decoration: underline;
+}
+
+.cookie-content .btn {
+  padding: 0.6rem 2rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  margin: 0;
+  flex-shrink: 0;
 }

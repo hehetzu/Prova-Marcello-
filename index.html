@@ -215,6 +215,18 @@
           <input type="hidden" name="ora_appuntamento" id="booking_time">
           <input type="hidden" name="tipo_richiesta" id="request_type" value="generico">
 
+          <!-- Selezione Dinamica Tipo Richiesta -->
+          <div class="form-group request-type-wrapper">
+            <label class="label-title">Motivo del contatto:</label>
+            <div class="radio-group">
+              <input type="radio" id="type-info" name="request_type_ui" value="info" checked>
+              <label for="type-info" class="radio-label">Informazioni</label>
+              
+              <input type="radio" id="type-quote" name="request_type_ui" value="preventivo">
+              <label for="type-quote" class="radio-label">Preventivo</label>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="name">Il tuo Nome</label>
             <input type="text" id="name" name="name" required>
@@ -231,6 +243,15 @@
             <label for="message">Messaggio</label>
             <textarea id="message" name="message" rows="5" placeholder="Scrivi qui la tua richiesta..." required></textarea>
           </div>
+
+          <!-- Checkbox Privacy -->
+          <div class="form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1.5rem;">
+            <input type="checkbox" id="privacy_consent" name="privacy_consent" required style="width: auto; margin-top: 5px;">
+            <label for="privacy_consent" style="font-size: 0.85rem; font-weight: 400; margin: 0;">
+              Ho letto l'<a href="privacy.html" target="_blank" style="text-decoration: underline; color: var(--primary);">Informativa sulla Privacy</a> e acconsento al trattamento dei dati.
+            </label>
+          </div>
+
           <button type="submit" class="btn">Invia Messaggio</button>
           <div id="contact-status" class="contact-status" aria-live="polite" style="margin-top:0.8rem;color:var(--muted);"></div>
         </form>
@@ -248,8 +269,15 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="24" height="24" fill="currentColor"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.9 0-184.9zm-49.1 299.2c-20.5 20.5-47.9 23-106.7 23-59.9 0-87.3-2.5-106.7-23-19.4-19.4-21.9-47.3-21.9-106.7 0-60.4 2.5-87.3 21.9-106.7 19.4-19.4 47.3-21.9 106.7-21.9 59.9 0 87.3 2.5 106.7 21.9 19.4 19.4 21.9 47.3 21.9 106.7 0 59.9-2.5 87.3-21.9 106.7z"/></svg>
     </a>
   </div>
-  <p>© <span id="year"></span> Laboratorio Odontotecnico Roso Marcello. Tutti i diritti riservati.</p>
+  <p>© <span id="year"></span> Laboratorio Odontotecnico Roso Marcello. Tutti i diritti riservati. | <a href="privacy.html" style="color: inherit; text-decoration: underline;">Privacy Policy</a></p>
 </footer>
+
+<div id="cookie-banner" class="cookie-banner">
+  <div class="cookie-content">
+    <p>Questo sito utilizza cookie tecnici per garantire il corretto funzionamento. Continuando a navigare accetti l'utilizzo dei cookie. <a href="privacy.html">Leggi l'informativa</a>.</p>
+    <button id="accept-cookies" class="btn">Accetto</button>
+  </div>
+</div>
 
 <div class="modal" id="image-modal">
   <div class="modal-inner">
