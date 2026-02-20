@@ -663,7 +663,33 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
 
-    // 2. Crea l'HTML della chat (solo finestra: il toggler visibile è il robottino floating)
+    // 2. Crea l'HTML della chat e dei pulsanti se non esistono
+    
+    // Creazione contenitore icone flottanti se manca
+    let floatContainer = document.querySelector('.floating-icons');
+    if (!floatContainer) {
+      floatContainer = document.createElement('div');
+      floatContainer.className = 'floating-icons';
+      document.body.appendChild(floatContainer);
+    }
+
+    // Creazione pulsante WhatsApp se manca
+    if (!document.querySelector('.whatsapp-float')) {
+      const waLink = document.createElement('a');
+      waLink.className = 'floating-icon whatsapp-float';
+      waLink.href = "https://wa.me/393381731927";
+      waLink.target = "_blank";
+      floatContainer.appendChild(waLink);
+    }
+
+    // Creazione pulsante Robot se manca
+    if (!document.getElementById('robot-button')) {
+      const robotDiv = document.createElement('div');
+      robotDiv.id = 'robot-button';
+      robotDiv.className = 'floating-icon robot-float';
+      floatContainer.appendChild(robotDiv);
+    }
+
     const chatbotHTML = `
       <div class="chatbot-window">
         <div class="chat-header">
