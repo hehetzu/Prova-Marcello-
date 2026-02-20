@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("✅ Sito caricato: Versione Aggiornata");
 
   const themePath = (window.themeConfig && window.themeConfig.themeUrl) ? window.themeConfig.themeUrl + '/' : '';
 
