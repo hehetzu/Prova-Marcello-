@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Configurazione percorso tema (passato da functions.php)
   const themePath = (window.themeConfig && window.themeConfig.themeUrl) ? window.themeConfig.themeUrl + '/' : '';
 
   const yearSpan = document.getElementById('year');
@@ -38,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const newIndex = (index + currentGalleryItems.length) % currentGalleryItems.length;
 
     const item = currentGalleryItems[newIndex];
-    // Aggiornato per usare il path del tema per l'immagine di default
     modalImg.src = item.tagName === 'VIDEO' ? (item.poster || themePath + 'foto/deflex.jpeg') : item.src;
     currentIndex = newIndex;
   }
@@ -128,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
       'foto/foto-cliente-1.jpeg', 'foto/foto-cliente-2.jpeg', 'foto/foto-cliente-3.jpeg',
       'foto/foto-cliente-4.jpeg', 'foto/foto-cliente-5.jpeg', 'foto/foto-cliente-6.jpeg'
     ];
-    // Aggiornato per usare il path del tema
     clientsGalleryContainer.innerHTML = clientImages.map(src => 
       `<img src="${themePath}${src}" alt="Risultato finale del lavoro su un paziente" loading="lazy">`
     ).join('');
@@ -154,15 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(el);
   });
 
-  // URL del tuo Google Apps Script (Assicurati di aggiornarlo se fai una Nuova Distribuzione)
   const googleScriptURL = "https://script.google.com/macros/s/AKfycbwoeUyQyflLQEajTgYLfK47mzyBZuaemDWWKVpfhwPZTvS9iZ0ekt0KDtusjLkHYNm1/exec";
 
-  // --- TRACKING VISITE (Counter Segreto) ---
-  // Invia un segnale a Google Sheet una volta per sessione
+  // --- Inizio Codice "Sveglia" per Render ---
+  // Invia una richiesta al backend appena il sito viene aperto per "svegliarlo" dallo standby.
+  // Questo viene fatto solo una volta per sessione di navigazione.
+  if (!sessionStorage.getItem('backend_warmed_up')) {
+    console.log('🔥 Invio ping per svegliare il backend...');
+    fetch('https://marcello-bot.onrender.com/').catch(err => console.warn('Ping al backend fallito (normale se in standby).', err));
+    sessionStorage.setItem('backend_warmed_up', 'true');
+  }
+  // --- Fine Codice "Sveglia" ---
+
   if (!sessionStorage.getItem('visit_logged')) {
     const trackParams = new URLSearchParams();
     trackParams.append('action', 'track_visit');
-    trackParams.append('device', navigator.userAgent); // Info sul dispositivo (Mobile/PC)
+    trackParams.append('device', navigator.userAgent);
 
     fetch(googleScriptURL, { method: 'POST', body: trackParams }).catch(err => {});
     sessionStorage.setItem('visit_logged', 'true');
@@ -179,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
       submitButton.textContent = 'Invio in corso...';
       submitButton.disabled = true;
 
-      // Funzione per gestire l'errore finale
       const handleError = (err) => {
         console.error('Errore invio:', err);
         alert('Si è verificato un errore. Per favore contattaci telefonicamente o su WhatsApp.');
@@ -187,28 +190,22 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = false;
       };
 
-      // Funzione per gestire il successo
       const handleSuccess = () => {
         alert('Messaggio inviato con successo! Ti risponderemo al più presto.');
         contactForm.reset();
         submitButton.textContent = originalText;
         submitButton.disabled = false;
-        if (window.closeContactPopup) window.closeContactPopup(); // Chiude il popup del form
+        if (window.closeContactPopup) window.closeContactPopup();
       };
 
       const formData = new FormData(contactForm);
 
-      // Fallback di sicurezza: se c'è una data compilata, forziamo il tipo "appuntamento"
-      // Questo corregge eventuali errori se il campo hidden non si è aggiornato
       if (formData.get('data_appuntamento') && formData.get('data_appuntamento').trim() !== '') {
         formData.set('tipo_richiesta', 'appuntamento');
       }
 
-      // Configurazione per una mail più professionale (Template e Auto-risposta)
-      formData.set('_captcha', 'false'); // Assicura che il captcha sia disattivato
-      // Rimuoviamo temporaneamente il template 'box' per garantire la consegna
+      formData.set('_captcha', 'false');
 
-      // Preparazione dati per Telegram
       const telegramPayload = {
         nome: formData.get('name'),
         email: formData.get('email'),
@@ -218,7 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        // 1. PRIMA controlliamo e salviamo su Google Sheet (per evitare doppie prenotazioni)
         const sheetResponse = await fetch(googleScriptURL, {
           method: "POST",
           body: formData
@@ -227,18 +223,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const sheetData = await sheetResponse.json();
         
         if (sheetData.result === 'error') {
-          // Se Google dice che è occupato o c'è un errore, ci fermiamo QUI.
           alert("⚠️ " + sheetData.message);
           submitButton.textContent = originalText;
           submitButton.disabled = false;
-          return; // Stop
+          return;
         }
 
         console.log("✅ Prenotazione confermata su Google Sheet.");
 
-        // 2. Se Google è OK, inviamo a Telegram e Email in parallelo
         const telegramPromise = fetch('https://marcello-bot.onrender.com/webhook', {
-        // const telegramPromise = fetch('http://localhost:5000/webhook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(telegramPayload)
@@ -247,7 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // LOGICA IBRIDA: Brevo (Principale) -> FormSubmit (Backup)
         const emailLogicPromise = (async () => {
           try {
-            // 1. Tenta invio tramite Brevo (dal tuo Backend Python)
             const brevoResp = await fetch('https://marcello-bot.onrender.com/send_email', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -256,13 +248,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (brevoResp.ok) {
               console.log("✅ Email inviata con successo via Brevo");
-              return { ok: true }; // Simula una risposta positiva
+              return { ok: true };
             } else {
-              throw new Error("Brevo ha restituito errore: " + brevoResp.status);
+              let errorDetail = brevoResp.status;
+              try {
+                const errorJson = await brevoResp.json();
+                errorDetail += `: ${errorJson.message || 'Nessun dettaglio'}`;
+              } catch (e) {
+                errorDetail += ` ${brevoResp.statusText}`;
+              }
+              throw new Error("Brevo ha restituito errore: " + errorDetail);
             }
           } catch (err) {
             console.warn("⚠️ Brevo fallito (" + err.message + "), passo al backup FormSubmit...");
-            // 2. Fallback: Usa FormSubmit se Brevo fallisce
             return fetch(contactForm.action, {
               method: "POST",
               body: formData,
@@ -288,14 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const contactSection = document.getElementById('contatti');
   const quoteButton = document.querySelector('.fixed-quote-btn');
 
-  // Gestione Popup Form
-  window.closeContactPopup = () => {}; // Crea una funzione globale vuota
+  window.closeContactPopup = () => {};
   const contactInfo = document.querySelector('.contatti-info');
   if (contactForm) {
     contactForm.style.display = 'none';
   }
 
-  // --- LOGICA DINAMICA FORM ---
   function setupDynamicForm() {
     const radioInputs = document.querySelectorAll('input[name="request_type_ui"]');
     const messageBox = document.getElementById('message');
@@ -328,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (contactForm && contactInfo) {
     // Aggiungi campo telefono dinamicamente
-    if (!contactForm.querySelector('[name="telefono"]') && !contactForm.querySelector('[name="phone"]')) {
       const emailInput = contactForm.querySelector('input[name="email"]');
       if (emailInput) {
         const emailGroup = emailInput.closest('.form-group');
@@ -342,12 +337,9 @@ document.addEventListener('DOMContentLoaded', () => {
           emailGroup.parentNode.insertBefore(phoneGroup, emailGroup.nextSibling);
         }
       }
-    }
 
-    // Inizializza la logica dinamica
     setupDynamicForm();
 
-    // 1. Crea il contenitore Modale
     const modalOverlay = document.createElement('div');
     modalOverlay.className = 'modal';
     modalOverlay.style.zIndex = '10000';
@@ -359,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn.innerHTML = '&times;';
     closeBtn.className = 'popup-close-btn';
 
-    // 2. Sposta il form nel modale
     contactForm.parentNode.removeChild(contactForm);
     contactForm.classList.remove('animate-on-scroll');
     contactForm.style.display = 'block';
@@ -368,26 +359,27 @@ document.addEventListener('DOMContentLoaded', () => {
     modalOverlay.appendChild(modalContent);
     document.body.appendChild(modalOverlay);
 
-    // 3. Funzioni e Eventi
     const defaultSubject = contactForm.querySelector('input[name="_subject"]').value;
-    const openPopup = () => {
+    const openPopup = (mode) => {
+      const requestTypeWrapper = contactForm.querySelector('.request-type-wrapper');
+      if (requestTypeWrapper) {
+        requestTypeWrapper.style.display = (mode === 'appointment') ? 'none' : 'block';
+      }
       modalOverlay.classList.add('is-open');
     };
     const closePopup = () => {
       modalOverlay.classList.remove('is-open');
-      // Ripristina l'oggetto dell'email quando il popup si chiude
       const subjectInput = contactForm.querySelector('input[name="_subject"]');
       if (subjectInput) subjectInput.value = defaultSubject;
     };
 
-    window.closeContactPopup = closePopup; // Rendi la funzione di chiusura accessibile globalmente
-    window.openContactPopup = openPopup;   // Rendi la funzione di apertura accessibile globalmente
+    window.closeContactPopup = closePopup;
+    window.openContactPopup = openPopup;
     closeBtn.addEventListener('click', closePopup);
     modalOverlay.addEventListener('click', (e) => {
       if (e.target === modalOverlay) closePopup();
     });
 
-    // Funzione per preparare il form per una richiesta generica (Preventivo)
     const prepareForQuote = () => {
       const subjectInput = contactForm.querySelector('input[name="_subject"]');
       const dateInput = document.getElementById('booking_date');
@@ -397,33 +389,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const quoteRadio = document.getElementById('type-quote');
 
       if (subjectInput) subjectInput.value = "Richiesta Preventivo / Informazioni";
-      if (dateInput) dateInput.value = ""; // Pulisce la data
-      if (timeInput) timeInput.value = ""; // Pulisce l'ora
-      if (typeInput) typeInput.value = "preventivo"; // Imposta tipo preventivo
+      if (dateInput) dateInput.value = "";
+      if (timeInput) timeInput.value = "";
+      if (typeInput) typeInput.value = "preventivo";
       
-      // Seleziona visivamente il radio button "Preventivo"
       if (quoteRadio) {
         quoteRadio.checked = true;
-        // Scatena l'evento change per aggiornare il placeholder
         quoteRadio.dispatchEvent(new Event('change'));
       }
       
-      // Rimuovi eventuale testo automatico di appuntamento dal messaggio
       if (msgBox && msgBox.value.includes('Richiesta appuntamento')) {
         msgBox.value = msgBox.value.replace(/Richiesta appuntamento.*?\n\n/s, '');
       }
       
-      openPopup();
+      openPopup('quote');
     };
 
-    // 4. Aggiungi bottone vicino ai contatti
     const infoBtn = document.createElement('button');
     infoBtn.textContent = 'Richiedi Preventivo';
     infoBtn.className = 'btn';
     infoBtn.addEventListener('click', prepareForQuote);
     contactInfo.appendChild(infoBtn);
 
-    // 5. Collega anche il bottone fisso
     if (quoteButton) {
       quoteButton.addEventListener('click', (e) => {
         e.preventDefault();
@@ -436,16 +423,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Gestione visibilità bottoni fissi (Preventivo e WhatsApp) ---
   const footer = document.querySelector('footer');
-  const whatsappButton = document.querySelector('.whatsapp-button');
-  const scrollThreshold = 200; // Mostra i bottoni dopo 200px di scroll
+  const floatingIcons = document.querySelector('.floating-icons');
+  const scrollThreshold = 200;
 
-  // Stato di visibilità delle sezioni che nascondono i bottoni
   let quoteSectionIsVisible = false;
   let whatsappSectionIsVisible = false;
 
-  // Funzione centralizzata per aggiornare la visibilità dei bottoni
   function updateFixedButtonsVisibility() {
     const isScrolled = window.scrollY > scrollThreshold;
 
@@ -453,17 +437,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const shouldHide = !isScrolled || quoteSectionIsVisible;
       quoteButton.classList.toggle('is-hidden', shouldHide);
     }
-    if (whatsappButton) {
-      const shouldHide = !isScrolled || whatsappSectionIsVisible;
-      whatsappButton.classList.toggle('is-hidden', shouldHide);
+    if (floatingIcons) {
+      // Mantieni le icone flottanti visibili di default; nascondile solo
+      // quando la sezione contatti o il footer sono visibili.
+      const shouldHide = whatsappSectionIsVisible;
+      floatingIcons.classList.toggle('is-hidden', shouldHide);
     }
   }
 
-  // 1. Esegui il controllo iniziale e imposta il listener per lo scroll
   updateFixedButtonsVisibility();
   window.addEventListener('scroll', updateFixedButtonsVisibility, { passive: true });
 
-  // 2. Imposta un unico IntersectionObserver per monitorare le sezioni rilevanti
   if (contactSection || footer) {
     const intersectionStates = new Map();
     const visibilityObserver = new IntersectionObserver((entries) => {
@@ -479,7 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (footer) visibilityObserver.observe(footer);
   }
 
-  // --- Gestione Calendario Appuntamenti ---
   const calendarGrid = document.getElementById('calendar-grid');
   if (calendarGrid) {
     const showCalendarBtn = document.getElementById('show-calendar-btn');
@@ -519,15 +502,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       
       let hasStarted = false;
-
       for (let i = 1; i <= daysInMonth; i++) {
         const checkDate = new Date(year, month, i);
-        const dayOfWeek = checkDate.getDay(); // 0=Dom, 6=Sab
+        const dayOfWeek = checkDate.getDay();
 
-        // SALTA I WEEKEND (Non li renderizza proprio)
         if (dayOfWeek === 0 || dayOfWeek === 6) continue;
 
-        // Aggiungi padding solo per la prima riga del mese (Lun-Ven)
         if (!hasStarted) {
           const padding = dayOfWeek - 1; // Lun=1 -> 0 padding, Mar=2 -> 1 padding...
           for(let p=0; p<padding; p++) {
@@ -541,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dayEl.className = 'calendar-day';
         const today = new Date(); today.setHours(0,0,0,0);
 
-        if (checkDate < today) { // Disabilita solo passato (weekend già esclusi)
+        if (checkDate < today) {
            dayEl.classList.add('disabled');
         } else {
            dayEl.addEventListener('click', () => selectDate(i, month, year, dayEl));
@@ -551,9 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Funzione per recuperare gli orari occupati (da collegare al Google Script in futuro)
     async function getBookedSlots(date) {
-      // Formatta la data come dd/mm/yyyy per il confronto con il foglio Google
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
@@ -561,10 +539,10 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const response = await fetch(`${googleScriptURL}?date=${encodeURIComponent(dateString)}`);
         const data = await response.json();
-        return data.bookedSlots || []; // Ora ci aspettiamo una lista di oggetti con stato
+        return data.bookedSlots || [];
       } catch (e) {
         console.error("Errore controllo disponibilità:", e);
-        return []; // In caso di errore, mostra tutto disponibile per non bloccare l'utente
+        return [];
       }
     }
 
@@ -574,7 +552,6 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedDate = new Date(year, month, day);
       selectedDateDisplay.textContent = `${day} ${months[month]} ${year}`;
       
-      // Mostra caricamento mentre controlla la disponibilità
       timeSlots.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px;color:#666;">Verifica disponibilità...</div>';
       timeSlotsContainer.style.display = 'block';
       bookingAction.style.display = 'none';
@@ -592,7 +569,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = time;
         btn.className = 'time-slot-btn';
 
-        // Cerca se questo orario è prenotato
         const slot = bookedSlots.find(s => s.time === time);
         
         if (slot && slot.status === 'confirmed') {
@@ -625,26 +601,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (bookingDateInput) bookingDateInput.value = selectedDate.toLocaleDateString('it-IT');
       if (bookingTimeInput) bookingTimeInput.value = selectedTime;
-      if (typeInput) typeInput.value = "appuntamento"; // Imposta tipo appuntamento
+      if (typeInput) typeInput.value = "appuntamento";
 
       if (messageBox && !messageBox.value.includes('Richiesta appuntamento')) messageBox.value = `Richiesta appuntamento per il ${selectedDate.toLocaleDateString('it-IT')} alle ore ${selectedTime}.\n\n` + messageBox.value;
-      // Modifica l'oggetto dell'email per identificare subito la richiesta di appuntamento
       if (subjectInput) {
         subjectInput.value = `Richiesta Appuntamento - ${selectedDate.toLocaleDateString('it-IT')} ore ${selectedTime}`;
       }
-      if (window.openContactPopup) window.openContactPopup();
+      if (window.openContactPopup) window.openContactPopup('appointment');
     });
     renderCalendar(currentDate);
   }
 
-  // --- Cookie Banner ---
   const cookieBanner = document.getElementById('cookie-banner');
   const acceptCookiesBtn = document.getElementById('accept-cookies');
 
   if (cookieBanner && acceptCookiesBtn) {
-    // Controlla se l'utente ha già accettato
     if (!localStorage.getItem('cookie_consent')) {
-      // Mostra il banner dopo un breve ritardo
       setTimeout(() => {
         cookieBanner.classList.add('is-visible');
       }, 1000);
@@ -655,4 +627,341 @@ document.addEventListener('DOMContentLoaded', () => {
       cookieBanner.classList.remove('is-visible');
     });
   }
+
+  // --- INIZIO CODICE CHATBOT ASSISTENTE ---
+  initChatbot();
+
+  function initChatbot() {
+    // 1. Inietta lo stile CSS per la chat
+    const style = document.createElement('style');
+
+    style.innerHTML = `
+      .chatbot-window { position: fixed; bottom: 90px; right: 30px; width: 320px; background: #fff; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); overflow: hidden; opacity: 0; pointer-events: none; transform: scale(0.5); transform-origin: bottom right; transition: all 0.3s ease; z-index: 9999; display: flex; flex-direction: column; }
+      .chatbot-window.show { opacity: 1; pointer-events: auto; transform: scale(1); }
+      .chat-header { background: #0056b3; padding: 15px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
+      .chat-header h3 { margin: 0; font-size: 16px; }
+      .chat-header span { cursor: pointer; font-size: 20px; }
+      .chat-box { padding: 15px; height: 300px; overflow-y: auto; background: #f4f4f4; display: flex; flex-direction: column; gap: 10px; }
+      .chat-box .chat-msg { max-width: 80%; padding: 10px; border-radius: 10px; font-size: 14px; word-wrap: break-word; }
+      .chat-box .incoming { background: #e0e0e0; color: #333; align-self: flex-start; border-bottom-left-radius: 0; }
+      .chat-box .outgoing { background: #0056b3; color: #fff; align-self: flex-end; border-bottom-right-radius: 0; }
+      .chat-input { padding: 10px; border-top: 1px solid #ddd; display: flex; gap: 5px; background: #fff; }
+      .chat-input input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 5px; outline: none; }
+      .chat-input button { background: #0056b3; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+      .chat-options { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+      .chat-option-btn { background: #fff; border: 1px solid #0056b3; color: #0056b3; padding: 5px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+      .chat-option-btn:hover { background: #0056b3; color: #fff; }
+      
+      /* Stile per il fumetto di benvenuto */
+      .robot-greeting { position: absolute; top: 50%; right: 95px; transform: translateY(-50%); background: #fff; color: #333; padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-size: 14px; font-weight: 600; opacity: 0; transform: translateY(-50%) scale(0.8); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; z-index: 10000; white-space: nowrap; }
+      .robot-greeting.show { opacity: 1; transform: translateY(-50%) scale(1); }
+      .robot-greeting::after { content: ''; position: absolute; top: 50%; left: 100%; transform: translateY(-50%); border-width: 8px; border-style: solid; border-color: transparent transparent transparent #fff; }
+
+      /* Stile per il pulsante WhatsApp flottante */
+      .whatsapp-float { background-color: #25D366 !important; } /* Sovrascrive il gradiente per il colore pieno */
+      .whatsapp-float svg { width: 30px; height: 30px; fill: #fff; }
+    `;
+    document.head.appendChild(style);
+
+    // 2. Crea l'HTML della chat (solo finestra: il toggler visibile è il robottino floating)
+    const chatbotHTML = `
+      <div class="chatbot-window">
+        <div class="chat-header">
+          <h3>Assistente Virtuale</h3>
+          <span class="close-btn">&times;</span>
+        </div>
+        <div class="chat-box" id="chat-box">
+          <div class="chat-msg incoming">Ciao! 👋 Sono l'assistente virtuale del Laboratorio Roso. Come posso chiamarti?</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chat-input-field" placeholder="Scrivi qui..." required>
+          <button id="chat-send-btn">➤</button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+
+    // 3. Logica JavaScript
+    const robotBtn = document.getElementById('robot-button');
+    const windowChat = document.querySelector('.chatbot-window');
+    const closeBtn = document.querySelector('.close-btn');
+    const chatBox = document.getElementById('chat-box');
+    const inputField = document.getElementById('chat-input-field');
+    const sendBtn = document.getElementById('chat-send-btn');
+
+    let step = 0;
+    let userData = { nome: '', tipo: '', messaggio: '', email: '', telefono: '', data_app: '' };
+
+    const toggleChat = () => windowChat.classList.toggle('show');
+    closeBtn.addEventListener('click', toggleChat);
+
+    if (robotBtn) {
+      // Genera un robottino SVG animato via codice (Gratis, leggero e senza file esterni)
+      robotBtn.style.position = 'relative'; // Necessario per posizionare il fumetto
+      robotBtn.innerHTML = `
+        <div class="robot-greeting" id="robot-greeting">Ciao! 👋</div>
+        <svg width="85" height="85" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); cursor: pointer;">
+          <style>
+            @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+            @keyframes blink { 0%, 45%, 55%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
+            @keyframes antenna { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+            .bot-body { animation: float 3s ease-in-out infinite; transform-origin: center; }
+            .bot-eye { transform-origin: center; animation: blink 4s infinite; }
+            .bot-antenna { transform-origin: bottom center; animation: antenna 5s ease-in-out infinite; }
+          </style>
+          <g class="bot-body">
+            <!-- Antenna -->
+            <g class="bot-antenna" transform="translate(50, 18)">
+               <line x1="0" y1="0" x2="0" y2="-12" stroke="#063969" stroke-width="3" stroke-linecap="round"/>
+               <circle cx="0" cy="-12" r="3.5" fill="#e74c3c" />
+            </g>
+            <!-- Testa -->
+            <rect x="20" y="18" width="60" height="50" rx="12" fill="#0056b3" stroke="#063969" stroke-width="2"/>
+            <!-- Schermo Faccia -->
+            <rect x="26" y="28" width="48" height="28" rx="8" fill="#ffffff" />
+            <!-- Occhi -->
+            <circle class="bot-eye" cx="40" cy="40" r="4" fill="#2c3e50" />
+            <circle class="bot-eye" cx="60" cy="40" r="4" fill="#2c3e50" />
+            <!-- Bocca -->
+            <path d="M 42 50 Q 50 55 58 50" stroke="#2c3e50" stroke-width="2" fill="none" stroke-linecap="round" />
+            <!-- Orecchie -->
+            <rect x="14" y="35" width="6" height="14" rx="2" fill="#063969" />
+            <rect x="80" y="35" width="6" height="14" rx="2" fill="#063969" />
+          </g>
+        </svg>`;
+      robotBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleChat();
+      });
+
+      // Mostra il fumetto di benvenuto dopo 1 secondo
+      setTimeout(() => {
+        const bubble = document.getElementById('robot-greeting');
+        if(bubble) {
+          bubble.classList.add('show');
+          // Nascondilo automaticamente dopo 6 secondi
+          setTimeout(() => bubble.classList.remove('show'), 6000);
+        }
+      }, 1000);
+    }
+
+    // Inietta l'icona di WhatsApp nel pulsante esistente
+    const waBtn = document.querySelector('.whatsapp-float');
+    if (waBtn) {
+      waBtn.innerHTML = `
+        <img src="foto/icons8-whatsapp.gif" alt="WhatsApp" style="width: 35px; height: 35px;">
+      `;
+    }
+
+    const appendMessage = (text, type) => {
+      const div = document.createElement('div');
+      div.classList.add('chat-msg', type);
+      div.innerHTML = text; // Usa innerHTML per permettere formattazione
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    };
+
+    const botReply = (text) => {
+      setTimeout(() => appendMessage(text, 'incoming'), 500);
+    };
+
+    const handleOptions = (options) => {
+      const div = document.createElement('div');
+      div.classList.add('chat-options');
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.classList.add('chat-option-btn');
+        btn.textContent = opt;
+        btn.onclick = () => handleInput(opt);
+        div.appendChild(btn);
+      });
+      setTimeout(() => {
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 600);
+    };
+
+    const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
+    const isValidPhone = (phone) => /^\+?[\d\s-]{7,}$/.test(phone);
+
+    function parseDateTimeFromString(text) {
+      const now = new Date();
+      let date = null;
+      let hour = null;
+      let minute = '00';
+
+      // Cerca un orario nel formato "alle 10" o "10:30"
+      const timeRegex = /(?:alle|ore)?\s*(\d{1,2})[:.]?(\d{2})?/i;
+      const timeMatch = text.match(timeRegex);
+
+      if (timeMatch) {
+          hour = parseInt(timeMatch[1], 10);
+          if (timeMatch[2]) {
+              minute = timeMatch[2];
+          }
+      }
+      
+      // Se non trova un orario, non può essere un appuntamento specifico
+      if (hour === null) return '';
+
+      // Cerca una data nel formato "DD/MM/YYYY" o "DD/MM"
+      const dateRegex = /(\d{1,2})\/(\d{1,2})(?:\/(\d{4}|\d{2}))?/i;
+      const dateMatch = text.match(dateRegex);
+      if (dateMatch) {
+          const day = parseInt(dateMatch[1], 10);
+          const month = parseInt(dateMatch[2], 10) - 1;
+          let year = now.getFullYear();
+          if (dateMatch[3]) {
+              const y = parseInt(dateMatch[3], 10);
+              year = y < 100 ? 2000 + y : y;
+          }
+          date = new Date(year, month, day);
+      } else if (/\bdomani\b/i.test(text)) {
+          date = new Date();
+          date.setDate(now.getDate() + 1);
+      } else {
+          // Se non c'è una data specifica ma c'è un orario, assume la data di oggi
+          date = new Date();
+      }
+
+      if (date) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const year = date.getFullYear();
+          const formattedHour = String(hour).padStart(2, '0');
+          return `${day}/${month}/${year} ${formattedHour}:${minute}`;
+      }
+      return '';
+    }
+
+    const sendToBackend = async () => {
+      appendMessage("⏳ Invio richiesta in corso...", 'incoming');
+      
+      const fullMessage = `[DA CHATBOT] Tipo: ${userData.tipo}\nMessaggio: ${userData.messaggio}`;
+      
+      // 1. Payload JSON per Telegram e Brevo (email)
+      const jsonPayload = {
+        nome: userData.nome,
+        email: userData.email,
+        telefono: userData.telefono,
+        messaggio: fullMessage,
+        data: userData.data_app || ''
+      };
+
+      // 2. Dati FormData per Google Sheet (devono corrispondere ai campi del form)
+      const sheetFormData = new FormData();
+      sheetFormData.append('name', userData.nome);
+      sheetFormData.append('email', userData.email);
+      sheetFormData.append('telefono', userData.telefono);
+      sheetFormData.append('message', fullMessage);
+      sheetFormData.append('tipo_richiesta', userData.tipo.toLowerCase());
+      sheetFormData.append('_captcha', 'false');
+
+      try {
+        // 3. Eseguiamo tutte le chiamate in parallelo per efficienza
+        const sheetPromise = fetch(googleScriptURL, {
+          method: "POST",
+          body: sheetFormData
+        }).then(res => res.json()).catch(err => console.error("❌ Errore invio a Google Sheet dal chatbot:", err));
+
+        const telegramPromise = fetch('https://marcello-bot.onrender.com/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonPayload)
+        }).catch(err => console.error("❌ Errore invio a Telegram dal chatbot:", err));
+
+        const emailPromise = fetch('https://marcello-bot.onrender.com/send_email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(jsonPayload)
+        }).catch(err => console.error("❌ Errore invio a Brevo (email) dal chatbot:", err));
+
+        // Aspettiamo che tutte le chiamate siano state tentate
+        await Promise.all([sheetPromise, telegramPromise, emailPromise]);
+
+        botReply("✅ Perfetto! Ho inviato la tua richiesta. Ti risponderemo presto.");
+
+      } catch (error) {
+        console.error("Errore generale nell'invio dal chatbot:", error);
+        botReply("⚠️ C'è stato un piccolo problema tecnico, ma puoi comunque chiamarci al numero nel sito.");
+      }
+    };
+
+    const processStep = (msg) => {
+      switch(step) {
+        case 0: // Nome
+          userData.nome = msg;
+          step++;
+          botReply(`Piacere, ${userData.nome}! Di cosa hai bisogno oggi?`);
+          handleOptions(['Preventivo', 'Appuntamento', 'Informazioni']);
+          break;
+        case 1: // Tipo
+          userData.tipo = msg;
+          step++;
+          if (msg.toLowerCase().includes('appuntamento')) {
+            botReply("Ottimo. Per quando vorresti prenotare? (O descrivi la tua disponibilità)");
+          } else if (msg.toLowerCase().includes('preventivo')) {
+            botReply("D'accordo. Descrivimi brevemente il tipo di lavorazione.");
+          } else {
+            botReply("Dimmi pure, cosa vorresti sapere?");
+          }
+          break;
+        case 2: // Messaggio
+          userData.messaggio = msg;
+          step++;
+          
+          let replyText = "Grazie. Lasciami un'email o un numero di telefono per ricontattarti.";
+          
+          // Se è una richiesta di appuntamento, prova a capire la data
+          if (userData.tipo.toLowerCase().includes('appuntamento')) {
+              const parsedDate = parseDateTimeFromString(msg);
+              if (parsedDate) {
+                  userData.data_app = parsedDate;
+                  replyText = `Ok, ho segnato la richiesta per il <b>${parsedDate}</b>. Ora lasciami un'email o un numero di telefono per ricontattarti.`;
+              }
+          }
+          botReply(replyText);
+          break;
+        case 3: // Contatto
+          if (isValidEmail(msg)) {
+            userData.email = msg;
+            userData.telefono = '';
+            step++;
+            sendToBackend();
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+          } else if (isValidPhone(msg)) {
+            userData.telefono = msg;
+            userData.email = '';
+            step++;
+            sendToBackend();
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+          } else {
+            botReply("Hmm, non sembra un'email o un numero di telefono valido. Per favore, inserisci un contatto corretto per poterti ricontattare.");
+          }
+          break;
+      }
+    };
+
+    const handleInput = (text = null) => {
+      const msg = text || inputField.value.trim();
+      if (!msg) return;
+
+      appendMessage(msg, 'outgoing');
+      inputField.value = '';
+      
+      // Rimuovi vecchie opzioni se presenti
+      const oldOptions = document.querySelectorAll('.chat-options');
+      oldOptions.forEach(el => el.remove());
+
+      processStep(msg);
+    };
+
+    sendBtn.addEventListener('click', () => handleInput());
+    inputField.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleInput();
+    });
+  }
+  // --- FINE CODICE CHATBOT ---
 });

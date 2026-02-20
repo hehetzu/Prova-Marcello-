@@ -172,7 +172,6 @@ section h2 {
   gap: 1.5rem;
 }
 
-/* Enhanced Card Styling */
 .card {
   background: var(--white);
   border-radius: var(--radius);
@@ -238,7 +237,6 @@ section h2 {
   font-weight: 500;
 }
 
-/* Stile Dinamico Radio Buttons (Chips) */
 .request-type-wrapper {
   margin-bottom: 1.5rem;
 }
@@ -258,7 +256,7 @@ section h2 {
 }
 
 .radio-group input[type="radio"] {
-  display: none; /* Nasconde il pallino standard */
+  display: none;
 }
 
 .radio-label {
@@ -280,7 +278,6 @@ section h2 {
   box-shadow: 0 4px 10px rgba(0, 86, 179, 0.2);
 }
 
-/* Form Inputs */
 input, textarea {
   border: 2px solid #e9ecef;
   border-radius: 8px;
@@ -383,18 +380,94 @@ input:focus, textarea:focus {
   transition: opacity 0.3s, visibility 0.3s;
 }
 
+/* New floating icons container */
+.floating-icons {
+  position: fixed;
+  right: 20px;
+  bottom: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  z-index: 1400; /* sopra la maggior parte degli elementi */
+}
+
+.floating-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.floating-icon:hover { transform: translateY(-6px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+/* WhatsApp specific style + pulse */
+.whatsapp-float svg { transform-origin: center; }
+.whatsapp-float {
+  background: radial-gradient(circle at 30% 30%, #e6fff7, #fff);
+  border: 2px solid rgba(37,211,102,0.12);
+  animation: pulse 2.6s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 6px 18px rgba(37,211,102,0.12); }
+  50% { transform: scale(1.06); box-shadow: 0 14px 28px rgba(37,211,102,0.18); }
+  100% { transform: scale(1); box-shadow: 0 6px 18px rgba(37,211,102,0.12); }
+}
+
+/* Robot icon animation: bob + eye blink */
+.robot-float {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+}
+.robot-float svg { display:block; }
+.robot-float { animation: float-bob 3s ease-in-out infinite; }
+.floating-img { width: auto; height: auto; max-width: 120px; max-height: 120px; object-fit: contain; display: block; }
+.robot-float { padding: 0; }
+.robot-float img { filter: drop-shadow(0 8px 18px rgba(0,0,0,0.22)); }
+.robot-img { transform-origin: center; border-radius: 0; }
+
+@keyframes float-bob {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+.robot-eye { transform-origin: center; }
+@keyframes blink {
+  0% { transform: scaleY(1); }
+  45% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); }
+  55% { transform: scaleY(1); }
+  100% { transform: scaleY(1); }
+}
+.robot-eye.left, .robot-eye.right { animation: blink 4s infinite; }
+
+.floating-icon:focus { outline: 3px solid rgba(0,168,204,0.15); }
+
 .header-brand:hover .logo { transform: rotate(360deg); transition: transform 1s ease; }
 .icon-svg { width: 48px; height: 48px; fill: var(--primary); margin-bottom: 1rem; }
 
 .fixed-quote-btn.is-hidden,
-.whatsapp-button.is-hidden {
+.whatsapp-button.is-hidden,
+.floating-icons.is-hidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
 
 @media (max-width: 768px) {
-  .container { padding: 1.5rem 1rem; } /* Riduci padding laterale */
+  .container { padding: 1.5rem 1rem; }
 
   header h1 { font-size: 1rem; }
   
@@ -420,11 +493,11 @@ input:focus, textarea:focus {
     visibility: visible;
   }
 
-  .hero-text h2 { font-size: 1.4rem; text-align: center; } /* Titoli più piccoli */
+  .hero-text h2 { font-size: 1.4rem; text-align: center; }
   .hero-text p { text-align: center; }
   
   section h2 {
-    font-size: 1.3rem; /* Titoli sezioni più piccoli */
+    font-size: 1.3rem;
     margin-bottom: 1rem;
   }
 
@@ -433,24 +506,25 @@ input:focus, textarea:focus {
   }
 
   .gallery img, .gallery video {
-    /* Rimpicciolisce le foto nelle gallerie su mobile */
     width: 200px;
     height: 140px;
   }
 
   footer { padding-bottom: 100px; }
 
-  /* Riduci dimensioni card e bottoni */
   .card { padding: 1.2rem; }
   .card h3 { font-size: 1.1rem; }
   .btn { padding: 0.6rem 1.5rem; font-size: 0.9rem; }
 
-  /* Riduci bottoni fissi (WhatsApp e Preventivo) */
   .whatsapp-button { width: 45px; height: 45px; bottom: 80px; }
   .whatsapp-button img { width: 100%; height: 100%; }
   .fixed-quote-btn { bottom: 15px; padding: 0.6rem 1.2rem; font-size: 0.85rem; }
 
-  /* Riduci banner cookie */
+  /* Responsive adjustments for floating icons */
+  .floating-icons { right: 14px; bottom: 80px; gap: 20px; }
+  .floating-icon { width: 48px; height: 48px; }
+  .floating-icon svg { width: 22px; height: 22px; }
+
   .cookie-banner { padding: 1rem; }
   .cookie-content p { font-size: 0.8rem; }
   .cookie-content .btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
@@ -475,7 +549,6 @@ footer {
   padding: 2rem 1rem;
 }
 
-/* Stili per la Modale (Lightbox) */
 .modal {
   position: fixed;
   top: 0;
@@ -544,7 +617,6 @@ footer {
 .modal-nav.prev { left: 20px; }
 .modal-nav.next { right: 20px; }
 
-/* Stili per il Popup Preventivo */
 .popup-form-content {
   background-color: #fff;
   padding: 2.5rem 1.5rem 1.5rem;
@@ -581,7 +653,6 @@ footer {
   color: var(--primary);
 }
 
-/* Stili compatti per il form nel popup */
 .popup-form-content .form-group {
   margin-bottom: 0.8rem;
 }
@@ -601,23 +672,20 @@ footer {
   height: 100px;
 }
 
-/* Layout a griglia per il form nel popup su schermi più grandi */
 @media (min-width: 600px) {
   .popup-form-content .contact-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0 1.5rem; /* Spazio tra le colonne */
+    gap: 0 1.5rem;
     align-items: start;
   }
 
-  /* Campi che occupano l'intera larghezza */
   .popup-form-content .form-group:has(input[name="telefono"]),
   .popup-form-content .form-group:has(textarea[name="message"]),
   .popup-form-content button[type="submit"] {
     grid-column: 1 / -1;
   }
 
-  /* Mantiene il margine inferiore per i gruppi del form */
   .popup-form-content .form-group {
     margin-bottom: 0.8rem;
   }
@@ -636,7 +704,6 @@ footer {
   }
 }
 
-/* Stili Calendario Prenotazioni */
 .calendar-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -696,7 +763,6 @@ footer {
 .time-slot-btn { padding: 0.5rem; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
 .time-slot-btn:hover, .time-slot-btn.selected { border-color: var(--primary); background-color: var(--primary); color: white; }
 
-/* Stile per orari in attesa di conferma (Giallo) */
 .time-slot-btn.pending {
   background-color: #ffc107;
   border-color: #ffc107;
@@ -705,7 +771,6 @@ footer {
   opacity: 1;
 }
 
-/* Legenda Calendario */
 .calendar-legend {
   display: flex;
   justify-content: center;
@@ -749,7 +814,6 @@ footer {
   background: #777;
 }
 
-/* Cookie Banner */
 .cookie-banner {
   position: fixed;
   bottom: 0;

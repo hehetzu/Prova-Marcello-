@@ -10,14 +10,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
+  <link rel="icon" href="foto/logomarcello.jpeg" type="image/jpeg">
+
   <link rel="stylesheet" href="style.css">
 
   <link rel="preload" as="image" href="foto/deflex.jpeg">
   
-  <!-- AOS Animation Library -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-  <!-- EmailJS SDK -->
+  <noscript>
+    <style>
+      [data-aos] {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
+
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 </head>
@@ -204,7 +213,6 @@
         <p><strong>Telefono:</strong> <a href="tel:3381731927">338 1731927</a></p>
         <a href="https://wa.me/393381731927" class="btn whatsapp-contact" target="_blank" rel="noopener noreferrer">Contattaci su WhatsApp</a>
       </div>
-        <!-- FORM MODIFICATO -->
         <form id="contact-form" action="https://formsubmit.co/contatti.rosomarcello@gmail.com" method="POST" class="contact-form animate-on-scroll" data-delay="200" data-aos="fade-left">
           <input type="hidden" name="_subject" value="Nuova richiesta dal sito web">
           <input type="hidden" name="_captcha" value="false">
@@ -215,7 +223,6 @@
           <input type="hidden" name="ora_appuntamento" id="booking_time">
           <input type="hidden" name="tipo_richiesta" id="request_type" value="generico">
 
-          <!-- Selezione Dinamica Tipo Richiesta -->
           <div class="form-group request-type-wrapper">
             <label class="label-title">Motivo del contatto:</label>
             <div class="radio-group">
@@ -244,7 +251,6 @@
             <textarea id="message" name="message" rows="5" placeholder="Scrivi qui la tua richiesta..." required></textarea>
           </div>
 
-          <!-- Checkbox Privacy -->
           <div class="form-group" style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1.5rem;">
             <input type="checkbox" id="privacy_consent" name="privacy_consent" required style="width: auto; margin-top: 5px;">
             <label for="privacy_consent" style="font-size: 0.85rem; font-weight: 400; margin: 0;">
@@ -290,12 +296,17 @@
 
 <a href="#contatti" class="fixed-quote-btn btn">Ottieni un Preventivo</a>
 
-<a href="https://wa.me/393381731927" class="whatsapp-button" target="_blank" rel="noopener noreferrer">
-  <img src="foto/icons8-whatsapp.gif" alt="WhatsApp" width="55" height="55">
-  <span class="sr-only">Contattaci su WhatsApp</span>
-</a>
+<!-- Floating communication buttons: WhatsApp + Robot -->
+<div class="floating-icons">
+  <a href="https://wa.me/393381731927" class="floating-icon whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Contattaci su WhatsApp">
+    <img src="foto/icons/whatsapp.svg" alt="WhatsApp" width="28" height="28" class="floating-img whatsapp-img">
+  </a>
 
-<!-- Initialize AOS Animation -->
+  <button class="floating-icon robot-float" id="robot-button" aria-label="Apri assistente robotico">
+    <img src="https://cdnl.iconscout.com/lottie/premium/thumb/happy-robot-say-hai-animation-gif-download-4729052.gif" alt="Assistente" width="96" height="96" class="floating-img robot-img">
+  </button>
+</div>
+
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
   AOS.init({
