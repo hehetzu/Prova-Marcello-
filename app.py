@@ -327,11 +327,14 @@ def send_email():
     data = request.json
     nome = data.get("nome", "Utente")
     email_cliente = data.get("email", "")
-    
-    if not is_valid_email(email_cliente):
-        return jsonify({"status": "error", "message": "Email cliente non valida"}), 400
-
     telefono = data.get("telefono", "")
+    
+    if email_cliente and not is_valid_email(email_cliente):
+        return jsonify({"status": "error", "message": "Email cliente non valida"}), 400
+    
+    if not email_cliente and not telefono:
+        return jsonify({"status": "error", "message": "Inserire almeno email o telefono"}), 400
+
     messaggio = data.get("messaggio", "")
     data_app = data.get("data", "")
 
@@ -416,10 +419,12 @@ def send_email():
     payload_admin = {
         "sender": {"name": "Sito Web Marcello", "email": BREVO_SENDER_EMAIL},
         "to": [{"email": BREVO_ADMIN_RECIPIENT, "name": "Laboratorio Roso Marcello"}],
-        "replyTo": {"email": email_cliente, "name": nome},
         "subject": subject_admin,
         "htmlContent": html_content_admin
     }
+
+    if email_cliente:
+        payload_admin["replyTo"] = {"email": email_cliente, "name": nome}
 
     try:
         response_admin = requests.post(url, json=payload_admin, headers=headers, timeout=10)
